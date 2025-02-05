@@ -11,7 +11,7 @@ services:
       MYSQL_USER: root
       MYSQL_PASSWORD: root
     volumes:
-      - ./data:/data
+      - ./sql_import:/sql_import
       - mariadb_data:/var/lib/mysql
     ports:
       - "3306:3306"
