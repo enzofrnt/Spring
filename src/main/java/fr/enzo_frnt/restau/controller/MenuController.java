@@ -62,12 +62,13 @@ public class MenuController {
             int max = maxCalories != null ? maxCalories : Integer.MAX_VALUE;
             spec = spec.and((root, query, cb) -> {
                 Join<Menu, Plat> platsJoin = root.join("plats");
-                Expression<Integer> totalCalories = cb.sum(platsJoin.get("nbCalories"));
-                query.groupBy(root);
-                return cb.and(
-                    cb.greaterThanOrEqualTo(totalCalories, min),
-                    cb.lessThanOrEqualTo(totalCalories, max)
-                );
+                Expression<Long> totalCalories = cb.sum(platsJoin.get("nbCalories"));
+                query.groupBy(root.get("id"));
+                query.having(cb.and(
+                    cb.greaterThanOrEqualTo(totalCalories, cb.literal((long) min)),
+                    cb.lessThanOrEqualTo(totalCalories, cb.literal((long) max))
+                ));
+                return cb.conjunction();
             });
         }
         
