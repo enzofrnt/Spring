@@ -196,6 +196,14 @@ public class MenuController {
         return "redirect:/menus";
     }
 
+    @GetMapping("/{id}")
+    public String showMenu(@PathVariable Long id, Model model) {
+        Menu menu = menuRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Invalid menu Id:" + id));
+        model.addAttribute("menu", menu);
+        return "menu-details";
+    }
+
     @InitBinder
     public void initBinder(WebDataBinder binder) {
         binder.registerCustomEditor(Plat.class, "plats", new PropertyEditorSupport() {
