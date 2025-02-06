@@ -30,28 +30,18 @@
             align-items: center;
             justify-content: center;
             border-radius: 50%;
+            padding: 0;
             transition: all 0.2s ease;
-            border: none;
         }
         .action-btn:hover {
             transform: translateY(-50%) scale(1.1);
         }
-        .add-btn {
-            background-color: var(--bs-success);
-            color: white;
-        }
-        .add-btn:hover {
-            background-color: var(--bs-success-dark);
-        }
-        .remove-btn {
-            background-color: var(--bs-danger);
-            color: white;
-        }
-        .remove-btn:hover {
-            background-color: var(--bs-danger-dark);
-        }
         .action-btn i {
             font-size: 1.2rem;
+        }
+        .add-btn {
+            right: auto;
+            left: 10px;
         }
     </style>
     <!-- N'oubliez pas d'inclure Bootstrap Icons -->
@@ -91,24 +81,28 @@
                         <div class="card-body" style="height: 400px; overflow-y: auto;">
                             <div class="list-group" id="platsList">
                                 <div th:each="plat : ${plats}" class="list-group-item not-selected cursor-pointer">
-                                    <span class="action-btn add-btn" onclick="moveToSelected(this.parentElement); event.stopPropagation();">
-                                        <i class="bi bi-plus-circle"></i>
-                                    </span>
-                                    <span class="action-btn remove-btn" onclick="moveToAvailable(this.parentElement); event.stopPropagation();">
-                                        <i class="bi bi-x-circle"></i>
-                                    </span>
-                                    <div onclick="moveToSelected(this.parentElement)">
-                                        <h6 class="mb-1" th:text="${plat.nom}">Nom du plat</h6>
-                                        <small th:text="${plat.categorie.nom}">Catégorie</small>
-                                        <br>
-                                        <small>
-                                            <span th:text="${plat.nbCalories}">0</span> kcal
-                                            (<span th:text="${plat.nbGlucides}">0</span>g glucides,
-                                            <span th:text="${plat.nbLipides}">0</span>g lipides,
-                                            <span th:text="${plat.nbProteines}">0</span>g protéines)
-                                        </small>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div onclick="moveToSelected(this.parentElement)">
+                                            <h6 class="mb-1" th:text="${plat.nom}">Nom du plat</h6>
+                                            <small th:text="${plat.categorie.nom}">Catégorie</small>
+                                            <br>
+                                            <small>
+                                                <span th:text="${plat.nbCalories}">0</span> kcal
+                                                (<span th:text="${plat.nbGlucides}">0</span>g glucides,
+                                                <span th:text="${plat.nbLipides}">0</span>g lipides,
+                                                <span th:text="${plat.nbProteines}">0</span>g protéines)
+                                            </small>
+                                        </div>
+                                        <div>
+                                            <button type="button" class="action-btn add-btn btn btn-success" onclick="moveToSelected(this.parentElement.parentElement); event.stopPropagation();">
+                                                <i class="bi bi-plus-circle"></i>
+                                            </button>
+                                            <button type="button" class="action-btn remove-btn btn btn-danger" onclick="moveToAvailable(this.parentElement.parentElement); event.stopPropagation();">
+                                                <i class="bi bi-x-circle"></i>
+                                            </button>
+                                        </div>
+                                        <input type="checkbox" th:value="${plat.id}" name="platsIds" style="display: none;" th:checked="${menu.plats.contains(plat)}">
                                     </div>
-                                    <input type="checkbox" th:value="${plat.id}" name="platsIds" style="display: none;" th:checked="${menu.plats.contains(plat)}">
                                 </div>
                             </div>
                         </div>
@@ -140,40 +134,60 @@
 
     <script>
         function moveToSelected(item) {
-            if (item.parentElement.id === 'selectedPlats') return;
+            // On s'assure de récupérer l'élément list-group-item parent
+            const listGroupItem = item.closest('.list-group-item');
+            if (!listGroupItem || listGroupItem.parentElement.id === 'selectedPlats') return;
             
-            const checkbox = item.querySelector('input[type="checkbox"]');
+            const checkbox = listGroupItem.querySelector('input[type="checkbox"]');
             checkbox.checked = true;
             
             // Masquer le bouton d'ajout et afficher le bouton de suppression
-            const addBtn = item.querySelector('.add-btn');
-            const removeBtn = item.querySelector('.remove-btn');
+            const addBtn = listGroupItem.querySelector('.add-btn');
+            const removeBtn = listGroupItem.querySelector('.remove-btn');
             if (addBtn) addBtn.style.display = 'none';
             if (removeBtn) removeBtn.style.display = 'flex';
             
-            item.classList.remove('not-selected');
-            item.classList.add('selected');
+            listGroupItem.classList.remove('not-selected');
+            listGroupItem.classList.add('selected');
             
-            document.getElementById("selectedPlats").appendChild(item);
+            // Créer une nouvelle div list-group si elle n'existe pas
+            let listGroup = document.querySelector("#selectedPlats .list-group");
+            if (!listGroup) {
+                listGroup = document.createElement('div');
+                listGroup.className = 'list-group';
+                document.getElementById("selectedPlats").appendChild(listGroup);
+            }
+            
+            listGroup.appendChild(listGroupItem);
             updateTotals();
         }
         
         function moveToAvailable(item) {
-            if (item.parentElement.id === 'platsList') return;
+            // On s'assure de récupérer l'élément list-group-item parent
+            const listGroupItem = item.closest('.list-group-item');
+            if (!listGroupItem || listGroupItem.parentElement.parentElement.id === 'platsList') return;
             
-            const checkbox = item.querySelector('input[type="checkbox"]');
+            const checkbox = listGroupItem.querySelector('input[type="checkbox"]');
             checkbox.checked = false;
             
             // Masquer le bouton de suppression et afficher le bouton d'ajout
-            const addBtn = item.querySelector('.add-btn');
-            const removeBtn = item.querySelector('.remove-btn');
+            const addBtn = listGroupItem.querySelector('.add-btn');
+            const removeBtn = listGroupItem.querySelector('.remove-btn');
             if (addBtn) addBtn.style.display = 'flex';
             if (removeBtn) removeBtn.style.display = 'none';
             
-            item.classList.remove('selected');
-            item.classList.add('not-selected');
+            listGroupItem.classList.remove('selected');
+            listGroupItem.classList.add('not-selected');
             
-            document.getElementById("platsList").appendChild(item);
+            // Déplacer vers la liste des plats disponibles
+            document.querySelector("#platsList").appendChild(listGroupItem);
+            
+            // Vérifier si la list-group des plats sélectionnés est vide
+            const selectedListGroup = document.querySelector("#selectedPlats .list-group");
+            if (selectedListGroup && selectedListGroup.children.length === 0) {
+                selectedListGroup.remove();
+            }
+            
             updateTotals();
         }
         
