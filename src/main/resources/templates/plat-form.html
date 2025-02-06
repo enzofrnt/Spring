@@ -12,46 +12,83 @@
         <h1 th:text="${plat.id == null ? 'Créer un plat' : 'Modifier le plat'}">Plat Form</h1>
         
         <form th:action="@{${plat.id == null ? '/plats/create' : '/plats/edit/' + plat.id}}" 
-              th:object="${plat}" method="post" class="needs-validation" novalidate>
+              th:object="${plat}" method="post" class="needs-validation" novalidate
+              onsubmit="return validateForm(event)">
             
             <div class="mb-3">
-                <label for="nom" class="form-label">Nom</label>
+                <label for="nom" class="form-label">Nom *</label>
                 <input type="text" class="form-control" id="nom" th:field="*{nom}" required>
+                <div class="invalid-feedback">Le nom est requis</div>
             </div>
 
             <div class="mb-3">
-                <label for="categorie" class="form-label">Catégorie</label>
+                <label for="categorie" class="form-label">Catégorie *</label>
                 <select class="form-select" id="categorie" th:field="*{categorie}" required>
                     <option value="">Sélectionner une catégorie</option>
                     <option th:each="cat : ${categories}" 
                             th:value="${cat.id}" 
                             th:text="${cat.nom}">Catégorie</option>
                 </select>
+                <div class="invalid-feedback">La catégorie est requise</div>
             </div>
 
             <div class="mb-3">
-                <label for="nbCalories" class="form-label">Calories</label>
-                <input type="number" class="form-control" id="nbCalories" th:field="*{nbCalories}" required min="0">
+                <label for="nbCalories" class="form-label">Calories *</label>
+                <input type="number" class="form-control" id="nbCalories" th:field="*{nbCalories}" 
+                       required min="0.01" step="0.01">
+                <div class="invalid-feedback">Le nombre de calories doit être supérieur à 0</div>
             </div>
 
             <div class="mb-3">
-                <label for="nbGlucides" class="form-label">Glucides</label>
-                <input type="number" class="form-control" id="nbGlucides" th:field="*{nbGlucides}" required min="0">
+                <label for="nbGlucides" class="form-label">Glucides *</label>
+                <input type="number" class="form-control" id="nbGlucides" th:field="*{nbGlucides}" 
+                       required min="0.01" step="0.01">
+                <div class="invalid-feedback">Le nombre de glucides doit être supérieur à 0</div>
             </div>
 
             <div class="mb-3">
-                <label for="nbLipides" class="form-label">Lipides</label>
-                <input type="number" class="form-control" id="nbLipides" th:field="*{nbLipides}" required min="0">
+                <label for="nbLipides" class="form-label">Lipides *</label>
+                <input type="number" class="form-control" id="nbLipides" th:field="*{nbLipides}" 
+                       required min="0.01" step="0.01">
+                <div class="invalid-feedback">Le nombre de lipides doit être supérieur à 0</div>
             </div>
 
             <div class="mb-3">
-                <label for="nbProteines" class="form-label">Protéines</label>
-                <input type="number" class="form-control" id="nbProteines" th:field="*{nbProteines}" required min="0">
+                <label for="nbProteines" class="form-label">Protéines *</label>
+                <input type="number" class="form-control" id="nbProteines" th:field="*{nbProteines}" 
+                       required min="0.01" step="0.01">
+                <div class="invalid-feedback">Le nombre de protéines doit être supérieur à 0</div>
             </div>
 
             <button type="submit" class="btn btn-primary">Enregistrer</button>
             <a href="/plats" class="btn btn-secondary">Annuler</a>
         </form>
     </div>
+
+    <script>
+        function validateForm(event) {
+            const form = event.target;
+            const numbers = ['nbCalories', 'nbGlucides', 'nbLipides', 'nbProteines'];
+            
+            if (!form.checkValidity()) {
+                event.preventDefault();
+                event.stopPropagation();
+                form.classList.add('was-validated');
+                return false;
+            }
+            
+            for (const id of numbers) {
+                const value = parseFloat(document.getElementById(id).value);
+                if (value <= 0) {
+                    event.preventDefault();
+                    event.stopPropagation();
+                    form.classList.add('was-validated');
+                    return false;
+                }
+            }
+            
+            return true;
+        }
+    </script>
 </body>
 </html> 
