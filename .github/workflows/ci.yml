@@ -36,7 +36,7 @@ jobs:
         run: mvn clean package -DskipTests --batch-mode
 
       - name: Upload jar artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v3.1.2
         with:
           name: jar-artifact
           path: target/*.jar
