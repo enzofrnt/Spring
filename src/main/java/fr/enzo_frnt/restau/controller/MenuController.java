@@ -16,6 +16,10 @@ import jakarta.persistence.criteria.Join;
 import jakarta.persistence.criteria.Expression;
 import fr.enzo_frnt.restau.repository.CategorieRepository;
 import java.util.List;
+import org.springframework.web.bind.WebDataBinder;
+import java.beans.PropertyEditorSupport;
+import java.util.Set;
+import java.util.HashSet;
 
 @Controller
 @RequestMapping("/menus")
@@ -147,7 +151,15 @@ public class MenuController {
     }
 
     @PostMapping("/create")
-    public String createMenu(@ModelAttribute Menu menu) {
+    public String createMenu(@ModelAttribute Menu menu,
+                             @RequestParam(value = "platsIds", required = false) List<Long> platsIds) {
+        if (platsIds != null) {
+            Set<Plat> plats = new HashSet<>();
+            for (Long id : platsIds) {
+                platRepository.findById(id).ifPresent(plats::add);
+            }
+            menu.setPlats(plats);
+        }
         menuRepository.save(menu);
         return "redirect:/menus";
     }
@@ -163,7 +175,17 @@ public class MenuController {
     }
 
     @PostMapping("/edit/{id}")
-    public String updateMenu(@PathVariable Long id, @ModelAttribute Menu menu) {
+    public String updateMenu(@PathVariable Long id, @ModelAttribute Menu menu,
+                             @RequestParam(value = "platsIds", required = false) List<Long> platsIds) {
+        if (platsIds != null) {
+            Set<Plat> plats = new HashSet<>();
+            for (Long pid : platsIds) {
+                platRepository.findById(pid).ifPresent(plats::add);
+            }
+            menu.setPlats(plats);
+        } else {
+            menu.setPlats(new HashSet<>());
+        }
         menuRepository.save(menu);
         return "redirect:/menus";
     }
@@ -172,5 +194,19 @@ public class MenuController {
     public String deleteMenu(@PathVariable Long id) {
         menuRepository.deleteById(id);
         return "redirect:/menus";
+    }
+
+    @InitBinder
+    public void initBinder(WebDataBinder binder) {
+        binder.registerCustomEditor(Plat.class, "plats", new PropertyEditorSupport() {
+            @Override
+            public void setAsText(String text) throws IllegalArgumentException {
+                if (text != null && !text.isEmpty()) {
+                    Long id = Long.valueOf(text);
+                    Plat plat = platRepository.findById(id).orElse(null);
+                    setValue(plat);
+                }
+            }
+        });
     }
 } 
