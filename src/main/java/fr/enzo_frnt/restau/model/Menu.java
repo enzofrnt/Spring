@@ -25,6 +25,7 @@ public class Menu {
         joinColumns = @JoinColumn(name = "menu_id"),
         inverseJoinColumns = @JoinColumn(name = "plat_id")
     )
+    @OrderBy("nom ASC")
     private Set<Plat> plats = new HashSet<>();
 
     public Menu() {

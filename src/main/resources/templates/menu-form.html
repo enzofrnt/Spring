@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org/" lang="fr">
+
+<head th:replace="~{ _layout.html :: header(~{::title}, _, _)}">
+    <title th:text="${menu.id == null ? 'Créer un menu' : 'Modifier le menu'}">Menu Form</title>
+</head>
+
+<body>
+    <nav th:replace="~{ _layout.html :: menu }"></nav>
+    
+    <div class="container mt-3">
+        <h1 th:text="${menu.id == null ? 'Créer un menu' : 'Modifier le menu'}">Menu Form</h1>
+        
+        <form th:action="@{${menu.id == null ? '/menus/create' : '/menus/edit/' + menu.id}}" 
+              th:object="${menu}" method="post" class="needs-validation" novalidate>
+            
+            <div class="mb-3">
+                <label for="nom" class="form-label">Nom</label>
+                <input type="text" class="form-control" id="nom" th:field="*{nom}" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="description" class="form-label">Description</label>
+                <textarea class="form-control" id="description" th:field="*{description}" rows="3"></textarea>
+            </div>
+
+            <div class="mb-3">
+                <label for="prix" class="form-label">Prix</label>
+                <input type="number" class="form-control" id="prix" th:field="*{prix}" required min="0" step="0.01">
+            </div>
+
+            <div class="mb-3">
+                <label class="form-label">Plats du menu</label>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="list-group" id="platsList">
+                            <div th:each="plat : ${plats}" class="list-group-item">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <div>
+                                        <h6 class="mb-1" th:text="${plat.nom}">Nom du plat</h6>
+                                        <small th:text="${plat.categorie.nom}">Catégorie</small>
+                                        <br>
+                                        <small>
+                                            <span th:text="${plat.nbCalories}">0</span> kcal
+                                            (<span th:text="${plat.nbGlucides}">0</span>g glucides,
+                                            <span th:text="${plat.nbLipides}">0</span>g lipides,
+                                            <span th:text="${plat.nbProteines}">0</span>g protéines)
+                                        </small>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" 
+                                               th:value="${plat.id}" 
+                                               name="platsIds"
+                                               th:checked="${menu.plats.contains(plat)}">
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header">
+                                Plats sélectionnés
+                            </div>
+                            <div class="card-body" id="selectedPlats">
+                                <!-- Rempli dynamiquement par JavaScript -->
+                            </div>
+                            <div class="card-footer">
+                                <div>Total calories: <span id="totalCalories">0</span> kcal</div>
+                                <div>Total glucides: <span id="totalGlucides">0</span>g</div>
+                                <div>Total lipides: <span id="totalLipides">0</span>g</div>
+                                <div>Total protéines: <span id="totalProteines">0</span>g</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+            <a href="/menus" class="btn btn-secondary">Annuler</a>
+        </form>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            function updateSelectedPlats() {
+                const selectedPlatsDiv = document.getElementById('selectedPlats');
+                const totalCaloriesSpan = document.getElementById('totalCalories');
+                const totalGlucidesSpan = document.getElementById('totalGlucides');
+                const totalLipidesSpan = document.getElementById('totalLipides');
+                const totalProteinesSpan = document.getElementById('totalProteines');
+                
+                let totalCalories = 0;
+                let totalGlucides = 0;
+                let totalLipides = 0;
+                let totalProteines = 0;
+                
+                selectedPlatsDiv.innerHTML = '';
+                
+                document.querySelectorAll('input[name="platsIds"]:checked').forEach(checkbox => {
+                    const platItem = checkbox.closest('.list-group-item');
+                    const platName = platItem.querySelector('h6').textContent;
+                    const nutritionText = platItem.querySelector('small:last-child').textContent;
+                    
+                    const calories = parseInt(nutritionText.match(/(\d+) kcal/)[1]);
+                    const glucides = parseInt(nutritionText.match(/(\d+)g glucides/)[1]);
+                    const lipides = parseInt(nutritionText.match(/(\d+)g lipides/)[1]);
+                    const proteines = parseInt(nutritionText.match(/(\d+)g protéines/)[1]);
+                    
+                    selectedPlatsDiv.innerHTML += `
+                        <div class="mb-2">
+                            <strong>${platName}</strong><br>
+                            <small>${calories} kcal (${glucides}g glucides, ${lipides}g lipides, ${proteines}g protéines)</small>
+                        </div>`;
+                    
+                    totalCalories += calories;
+                    totalGlucides += glucides;
+                    totalLipides += lipides;
+                    totalProteines += proteines;
+                });
+                
+                totalCaloriesSpan.textContent = totalCalories;
+                totalGlucidesSpan.textContent = totalGlucides;
+                totalLipidesSpan.textContent = totalLipides;
+                totalProteinesSpan.textContent = totalProteines;
+            }
+            
+            document.querySelectorAll('input[name="platsIds"]').forEach(checkbox => {
+                checkbox.addEventListener('change', updateSelectedPlats);
+            });
+            
+            // Initialisation
+            updateSelectedPlats();
+        });
+    </script>
+</body>
+</html> 

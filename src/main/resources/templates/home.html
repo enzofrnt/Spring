@@ -1,0 +1,16 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org/" lang="en">
+
+<head th:replace="~{ _layout.html :: header(~{::title}, _, _)}">
+    <title>Acceuil</title>
+</head>
+
+<body>
+    <nav th:replace="~{ _layout.html :: menu }"></nav>
+
+    <div class="container mt-3">
+        <h1>Bienvenue sur appli Spring Boot</h1>
+    </div>
+</body>
+
+</html>

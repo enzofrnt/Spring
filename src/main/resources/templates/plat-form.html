@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org/" lang="fr">
+
+<head th:replace="~{ _layout.html :: header(~{::title}, _, _)}">
+    <title th:text="${plat.id == null ? 'Créer un plat' : 'Modifier le plat'}">Plat Form</title>
+</head>
+
+<body>
+    <nav th:replace="~{ _layout.html :: menu }"></nav>
+    
+    <div class="container mt-3">
+        <h1 th:text="${plat.id == null ? 'Créer un plat' : 'Modifier le plat'}">Plat Form</h1>
+        
+        <form th:action="@{${plat.id == null ? '/plats/create' : '/plats/edit/' + plat.id}}" 
+              th:object="${plat}" method="post" class="needs-validation" novalidate>
+            
+            <div class="mb-3">
+                <label for="nom" class="form-label">Nom</label>
+                <input type="text" class="form-control" id="nom" th:field="*{nom}" required>
+            </div>
+
+            <div class="mb-3">
+                <label for="categorie" class="form-label">Catégorie</label>
+                <select class="form-select" id="categorie" th:field="*{categorie}" required>
+                    <option value="">Sélectionner une catégorie</option>
+                    <option th:each="cat : ${categories}" 
+                            th:value="${cat.id}" 
+                            th:text="${cat.nom}">Catégorie</option>
+                </select>
+            </div>
+
+            <div class="mb-3">
+                <label for="nbCalories" class="form-label">Calories</label>
+                <input type="number" class="form-control" id="nbCalories" th:field="*{nbCalories}" required min="0">
+            </div>
+
+            <div class="mb-3">
+                <label for="nbGlucides" class="form-label">Glucides</label>
+                <input type="number" class="form-control" id="nbGlucides" th:field="*{nbGlucides}" required min="0">
+            </div>
+
+            <div class="mb-3">
+                <label for="nbLipides" class="form-label">Lipides</label>
+                <input type="number" class="form-control" id="nbLipides" th:field="*{nbLipides}" required min="0">
+            </div>
+
+            <div class="mb-3">
+                <label for="nbProteines" class="form-label">Protéines</label>
+                <input type="number" class="form-control" id="nbProteines" th:field="*{nbProteines}" required min="0">
+            </div>
+
+            <button type="submit" class="btn btn-primary">Enregistrer</button>
+            <a href="/plats" class="btn btn-secondary">Annuler</a>
+        </form>
+    </div>
+</body>
+</html> 

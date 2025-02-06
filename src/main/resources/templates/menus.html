@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org/" lang="fr">
+
+<head th:replace="~{ _layout.html :: header(~{::title}, _, _)}">
+    <title>Liste des Menus</title>
+</head>
+
+<body>
+    <nav th:replace="~{ _layout.html :: menu }"></nav>
+    
+    <div class="container mt-3">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+            <h1>Liste des Menus</h1>
+            <div class="d-flex gap-3 align-items-center">
+                <a href="/menus/create" class="btn btn-primary">
+                    <i class="fa-solid fa-plus"></i> Nouveau Menu
+                </a>
+                <div class="form-group">
+                    <label for="pageSize">Éléments par page:</label>
+                    <select id="pageSize" class="form-select" onchange="changePageSize(this.value)">
+                        <option th:selected="${pageSize == 5}" value="5">5</option>
+                        <option th:selected="${pageSize == 10}" value="10">10</option>
+                        <option th:selected="${pageSize == 20}" value="20">20</option>
+                        <option th:selected="${pageSize == 50}" value="50">50</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <form th:action="@{/menus}" method="get" class="row g-3 mb-4">
+            <div class="col-md-3">
+                <div class="input-group">
+                    <input type="text" class="form-control" name="nom" th:value="${nom}"
+                        placeholder="Rechercher un menu...">
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="input-group">
+                    <input type="number" class="form-control" name="minPrix" th:value="${minPrix}"
+                        placeholder="Prix min" step="0.01" min="0">
+                    <input type="number" class="form-control" name="maxPrix" th:value="${maxPrix}"
+                        placeholder="Prix max" step="0.01" min="0">
+                </div>
+            </div>
+            
+            <div class="col-md-4">
+                <div class="input-group">
+                    <input type="number" class="form-control" name="minCalories" th:value="${minCalories}"
+                        placeholder="Calories min" min="0">
+                    <input type="number" class="form-control" name="maxCalories" th:value="${maxCalories}"
+                        placeholder="Calories max" min="0">
+                </div>
+            </div>
+
+            <div class="col-md-1">
+                <button type="submit" class="btn btn-primary w-100">
+                    <i class="fa-solid fa-search"></i>
+                </button>
+            </div>
+
+            <input type="hidden" name="size" th:value="${pageSize}">
+            <input type="hidden" name="page" value="0">
+        </form>
+
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead>
+                    <tr>
+                        <th>Nom</th>
+                        <th>Description</th>
+                        <th>Prix</th>
+                        <th>Calories Totales</th>
+                        <th>Plats</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr th:each="menu : ${menus}">
+                        <td th:text="${menu.nom}">Nom du menu</td>
+                        <td th:text="${menu.description}">Description</td>
+                        <td th:text="${#numbers.formatDecimal(menu.prix, 1, 2)} + ' €'">Prix</td>
+                        <td>
+                            <span th:with="totalCal=${#aggregates.sum(menu.plats.![nbCalories])}" 
+                                  th:text="${totalCal} + ' kcal'">
+                                Calories
+                            </span>
+                        </td>
+                        <td>
+                            <ul class="list-unstyled">
+                                <li th:each="plat : ${menu.plats}" th:text="'• ' + ${plat.nom}">Plat</li>
+                            </ul>
+                        </td>
+                        <td>
+                            <a class="btn btn-primary btn-sm" th:href="@{/menus/edit/{id}(id=${menu.id})}">
+                                <i class="fa-solid fa-pen-to-square"></i>
+                            </a>
+                            <a class="btn btn-danger btn-sm" th:href="@{/menus/delete/{id}(id=${menu.id})}"
+                               onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce menu ?')">
+                                <i class="fa-solid fa-trash"></i>
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <nav th:if="${totalPages > 1}">
+            <ul class="pagination justify-content-center">
+                <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+                    <a class="page-link" th:href="@{/menus(page=${currentPage - 1}, size=${pageSize})}">Précédent</a>
+                </li>
+                <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" 
+                    th:classappend="${currentPage == i} ? 'active'">
+                    <a class="page-link" th:href="@{/menus(page=${i}, size=${pageSize})}" th:text="${i + 1}">1</a>
+                </li>
+                <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
+                    <a class="page-link" th:href="@{/menus(page=${currentPage + 1}, size=${pageSize})}">Suivant</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <script>
+        function changePageSize(size) {
+            const params = new URLSearchParams(window.location.search);
+            const nom = params.get('nom') || '';
+            const minPrix = params.get('minPrix') || '';
+            const maxPrix = params.get('maxPrix') || '';
+            const minCalories = params.get('minCalories') || '';
+            const maxCalories = params.get('maxCalories') || '';
+            
+            window.location.href = `/menus?page=0&size=${size}&nom=${nom}&minPrix=${minPrix}&maxPrix=${maxPrix}&minCalories=${minCalories}&maxCalories=${maxCalories}`;
+        }
+    </script>
+</body>
+</html> 
