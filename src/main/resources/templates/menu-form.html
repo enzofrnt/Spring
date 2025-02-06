@@ -3,6 +3,59 @@
 
 <head th:replace="~{ _layout.html :: header(~{::title}, _, _)}">
     <title th:text="${menu.id == null ? 'Créer un menu' : 'Modifier le menu'}">Menu Form</title>
+    <style>
+        .cursor-pointer {
+            cursor: pointer;
+        }
+        .list-group-item {
+            position: relative;
+            padding: 0.75rem 3.5rem 0.75rem 1rem;
+            transition: background-color 0.2s ease;
+        }
+        .list-group-item.not-selected:hover {
+            background-color: rgba(40, 167, 69, 0.1);
+        }
+        .list-group-item.selected:hover {
+            background-color: rgba(220, 53, 69, 0.1);
+        }
+        .action-btn {
+            position: absolute;
+            top: 50%;
+            right: 10px;
+            transform: translateY(-50%);
+            cursor: pointer;
+            width: 2.5rem;
+            height: 2.5rem;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.2s ease;
+            border: none;
+        }
+        .action-btn:hover {
+            transform: translateY(-50%) scale(1.1);
+        }
+        .add-btn {
+            background-color: var(--bs-success);
+            color: white;
+        }
+        .add-btn:hover {
+            background-color: var(--bs-success-dark);
+        }
+        .remove-btn {
+            background-color: var(--bs-danger);
+            color: white;
+        }
+        .remove-btn:hover {
+            background-color: var(--bs-danger-dark);
+        }
+        .action-btn i {
+            font-size: 1.2rem;
+        }
+    </style>
+    <!-- N'oubliez pas d'inclure Bootstrap Icons -->
+    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"> -->
 </head>
 
 <body>
@@ -35,26 +88,27 @@
                         <div class="card-header">
                             <h5>Plats</h5>
                         </div>
-                        <div class="card-body">
-                            <div class="list-group" id="platsList" style="max-height: 400px; overflow-y: auto;">
-                                <div th:each="plat : ${plats}" class="list-group-item">
-                                    <div class="d-flex justify-content-between align-items-center cursor-pointer" onclick="togglePlat(this)">
-                                        <div>
-                                            <h6 class="mb-1" th:text="${plat.nom}">Nom du plat</h6>
-                                            <small th:text="${plat.categorie.nom}">Catégorie</small>
-                                            <br>
-                                            <small>
-                                                <span th:text="${plat.nbCalories}">0</span> kcal
-                                                (<span th:text="${plat.nbGlucides}">0</span>g glucides,
-                                                <span th:text="${plat.nbLipides}">0</span>g lipides,
-                                                <span th:text="${plat.nbProteines}">0</span>g protéines)
-                                            </small>
-                                        </div>
-                                        <div class="form-check" onclick="event.stopPropagation()">
-                                            <input class="form-check-input" type="checkbox" th:value="${plat.id}" name="platsIds"
-                                                   th:checked="${menu.plats.contains(plat)}">
-                                        </div>
+                        <div class="card-body" style="height: 400px; overflow-y: auto;">
+                            <div class="list-group" id="platsList">
+                                <div th:each="plat : ${plats}" class="list-group-item not-selected cursor-pointer">
+                                    <span class="action-btn add-btn" onclick="moveToSelected(this.parentElement); event.stopPropagation();">
+                                        <i class="bi bi-plus-circle"></i>
+                                    </span>
+                                    <span class="action-btn remove-btn" onclick="moveToAvailable(this.parentElement); event.stopPropagation();">
+                                        <i class="bi bi-x-circle"></i>
+                                    </span>
+                                    <div onclick="moveToSelected(this.parentElement)">
+                                        <h6 class="mb-1" th:text="${plat.nom}">Nom du plat</h6>
+                                        <small th:text="${plat.categorie.nom}">Catégorie</small>
+                                        <br>
+                                        <small>
+                                            <span th:text="${plat.nbCalories}">0</span> kcal
+                                            (<span th:text="${plat.nbGlucides}">0</span>g glucides,
+                                            <span th:text="${plat.nbLipides}">0</span>g lipides,
+                                            <span th:text="${plat.nbProteines}">0</span>g protéines)
+                                        </small>
                                     </div>
+                                    <input type="checkbox" th:value="${plat.id}" name="platsIds" style="display: none;" th:checked="${menu.plats.contains(plat)}">
                                 </div>
                             </div>
                         </div>
@@ -66,8 +120,8 @@
                         <div class="card-header">
                             Plats sélectionnés
                         </div>
-                        <div class="card-body" id="selectedPlats" style="max-height: 400px; overflow-y: auto;">
-                            <!-- Rempli dynamiquement par JavaScript -->
+                        <div class="card-body" id="selectedPlats" style="height: 400px; overflow-y: auto;">
+                            <!-- Les plats sélectionnés seront déplacés ici via JavaScript -->
                         </div>
                         <div class="card-footer">
                             <div>Total calories: <span id="totalCalories">0</span> kcal</div>
@@ -84,67 +138,90 @@
         </form>
     </div>
 
-    <style>
-        .cursor-pointer {
-            cursor: pointer;
-        }
-        .list-group-item:hover {
-            background-color: #545454;
-        }
-    </style>
-
     <script>
-        function togglePlat(element) {
-          const checkbox = element.querySelector('input[type="checkbox"]');
-          checkbox.checked = !checkbox.checked;
-          updateSelectedPlats();
+        function moveToSelected(item) {
+            if (item.parentElement.id === 'selectedPlats') return;
+            
+            const checkbox = item.querySelector('input[type="checkbox"]');
+            checkbox.checked = true;
+            
+            // Masquer le bouton d'ajout et afficher le bouton de suppression
+            const addBtn = item.querySelector('.add-btn');
+            const removeBtn = item.querySelector('.remove-btn');
+            if (addBtn) addBtn.style.display = 'none';
+            if (removeBtn) removeBtn.style.display = 'flex';
+            
+            item.classList.remove('not-selected');
+            item.classList.add('selected');
+            
+            document.getElementById("selectedPlats").appendChild(item);
+            updateTotals();
         }
-      
-        function updateSelectedPlats() {
-          const selectedPlatsDiv = document.getElementById('selectedPlats');
-          const totalCaloriesSpan = document.getElementById('totalCalories');
-          const totalGlucidesSpan = document.getElementById('totalGlucides');
-          const totalLipidesSpan = document.getElementById('totalLipides');
-          const totalProteinesSpan = document.getElementById('totalProteines');
-      
-          const checkboxes = document.querySelectorAll('input[name="platsIds"]:checked');
-          let totalCalories = 0, totalGlucides = 0, totalLipides = 0, totalProteines = 0;
-          let htmlContent = '';
-      
-          checkboxes.forEach((checkbox) => {
-            const item = checkbox.closest('.list-group-item');
-            if (item) {
-              const platName = item.querySelector('h6').textContent.trim();
-              const spans = item.querySelectorAll('small span');
-              const calories = spans.length > 0 ? parseInt(spans[0].textContent.trim()) : 0;
-              const glucides = spans.length > 1 ? parseInt(spans[1].textContent.trim()) : 0;
-              const lipides = spans.length > 2 ? parseInt(spans[2].textContent.trim()) : 0;
-              const proteines = spans.length > 3 ? parseInt(spans[3].textContent.trim()) : 0;
-      
-              totalCalories += calories;
-              totalGlucides += glucides;
-              totalLipides += lipides;
-              totalProteines += proteines;
-      
-              htmlContent += `<div class="mb-2">
-                                <strong>${platName}</strong><br>
-                                <small>${calories} kcal (${glucides}g glucides, ${lipides}g lipides, ${proteines}g protéines)</small>
-                              </div>`;
-            }
-          });
-      
-          selectedPlatsDiv.innerHTML = htmlContent;
-          totalCaloriesSpan.textContent = totalCalories;
-          totalGlucidesSpan.textContent = totalGlucides;
-          totalLipidesSpan.textContent = totalLipides;
-          totalProteinesSpan.textContent = totalProteines;
+        
+        function moveToAvailable(item) {
+            if (item.parentElement.id === 'platsList') return;
+            
+            const checkbox = item.querySelector('input[type="checkbox"]');
+            checkbox.checked = false;
+            
+            // Masquer le bouton de suppression et afficher le bouton d'ajout
+            const addBtn = item.querySelector('.add-btn');
+            const removeBtn = item.querySelector('.remove-btn');
+            if (addBtn) addBtn.style.display = 'flex';
+            if (removeBtn) removeBtn.style.display = 'none';
+            
+            item.classList.remove('selected');
+            item.classList.add('not-selected');
+            
+            document.getElementById("platsList").appendChild(item);
+            updateTotals();
         }
-      
-        document.addEventListener('DOMContentLoaded', function() {
-          updateSelectedPlats();
-          document.querySelectorAll('input[name="platsIds"]').forEach((checkbox) => {
-            checkbox.addEventListener('change', updateSelectedPlats);
-          });
+        
+        function updateTotals() {
+            let totalCalories = 0, totalGlucides = 0, totalLipides = 0, totalProteines = 0;
+            const selectedItems = document.querySelectorAll("#selectedPlats .list-group-item");
+            selectedItems.forEach(item => {
+                const spans = item.querySelectorAll("small span");
+                const calories = spans.length > 0 ? parseInt(spans[0].textContent.trim()) : 0;
+                const glucides = spans.length > 1 ? parseInt(spans[1].textContent.trim()) : 0;
+                const lipides = spans.length > 2 ? parseInt(spans[2].textContent.trim()) : 0;
+                const proteines = spans.length > 3 ? parseInt(spans[3].textContent.trim()) : 0;
+                totalCalories += calories;
+                totalGlucides += glucides;
+                totalLipides += lipides;
+                totalProteines += proteines;
+            });
+            document.getElementById("totalCalories").textContent = totalCalories;
+            document.getElementById("totalGlucides").textContent = totalGlucides;
+            document.getElementById("totalLipides").textContent = totalLipides;
+            document.getElementById("totalProteines").textContent = totalProteines;
+        }
+        
+        document.addEventListener("DOMContentLoaded", function() {
+            const availableItems = document.querySelectorAll("#platsList .list-group-item");
+            availableItems.forEach(item => {
+                // Initialiser l'affichage des boutons
+                const addBtn = item.querySelector('.add-btn');
+                const removeBtn = item.querySelector('.remove-btn');
+                const checkbox = item.querySelector('input[type="checkbox"]');
+                
+                if (checkbox.checked) {
+                    // Si le plat est déjà sélectionné
+                    if (addBtn) addBtn.style.display = 'none';
+                    if (removeBtn) removeBtn.style.display = 'flex';
+                    moveToSelected(item);
+                } else {
+                    // Si le plat n'est pas sélectionné
+                    if (addBtn) addBtn.style.display = 'flex';
+                    if (removeBtn) removeBtn.style.display = 'none';
+                }
+                
+                item.addEventListener("click", function() {
+                    moveToSelected(item);
+                });
+            });
+            
+            updateTotals();
         });
     </script>
 </body>
