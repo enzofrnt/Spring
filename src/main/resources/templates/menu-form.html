@@ -55,21 +55,25 @@
         <h1 th:text="${menu.id == null ? 'Créer un menu' : 'Modifier le menu'}">Menu Form</h1>
         
         <form th:action="@{${menu.id == null ? '/menus/create' : '/menus/edit/' + menu.id}}" 
-              th:object="${menu}" method="post" class="needs-validation" novalidate>
+              th:object="${menu}" method="post" class="needs-validation" novalidate
+              onsubmit="return validateForm(event)">
             
             <div class="mb-3">
-                <label for="nom" class="form-label">Nom</label>
+                <label for="nom" class="form-label">Nom *</label>
                 <input type="text" class="form-control" id="nom" th:field="*{nom}" required>
+                <div class="invalid-feedback">Le nom est requis</div>
             </div>
 
             <div class="mb-3">
-                <label for="description" class="form-label">Description</label>
-                <textarea class="form-control" id="description" th:field="*{description}" rows="3"></textarea>
+                <label for="description" class="form-label">Description *</label>
+                <textarea class="form-control" id="description" th:field="*{description}" rows="3" required></textarea>
+                <div class="invalid-feedback">La description est requise</div>
             </div>
 
             <div class="mb-3">
-                <label for="prix" class="form-label">Prix</label>
-                <input type="number" class="form-control" id="prix" th:field="*{prix}" required min="0" step="0.01">
+                <label for="prix" class="form-label">Prix *</label>
+                <input type="number" class="form-control" id="prix" th:field="*{prix}" required min="0.01" step="0.01">
+                <div class="invalid-feedback">Le prix doit être supérieur à 0</div>
             </div>
 
             <div class="row">
@@ -112,10 +116,13 @@
                 <div class="col-md-6">
                     <div class="card mb-3">
                         <div class="card-header">
-                            Plats sélectionnés
+                            Plats sélectionnés *
                         </div>
                         <div class="card-body" id="selectedPlats" style="height: 400px; overflow-y: auto;">
                             <!-- Les plats sélectionnés seront déplacés ici via JavaScript -->
+                        </div>
+                        <div id="platsError" class="invalid-feedback" style="display: none; margin-left: 1rem;">
+                            Veuillez sélectionner au moins un plat
                         </div>
                         <div class="card-footer">
                             <div>Total calories: <span id="totalCalories">0</span> kcal</div>
@@ -160,6 +167,7 @@
             
             listGroup.appendChild(listGroupItem);
             updateTotals();
+            updatePlatsError();
         }
         
         function moveToAvailable(item) {
@@ -189,6 +197,7 @@
             }
             
             updateTotals();
+            updatePlatsError();
         }
         
         function updateTotals() {
@@ -237,6 +246,36 @@
             
             updateTotals();
         });
+
+        function validateForm(event) {
+            const form = event.target;
+            const selectedPlats = document.querySelectorAll("#selectedPlats .list-group-item");
+            const platsError = document.getElementById('platsError');
+            
+            if (!form.checkValidity() || selectedPlats.length === 0) {
+                event.preventDefault();
+                event.stopPropagation();
+                
+                if (selectedPlats.length === 0) {
+                    platsError.style.display = 'block';
+                } else {
+                    platsError.style.display = 'none';
+                }
+                
+                form.classList.add('was-validated');
+                return false;
+            }
+            
+            platsError.style.display = 'none';
+            return true;
+        }
+        
+        // Ajoutons aussi la gestion de l'erreur lors du déplacement des plats
+        function updatePlatsError() {
+            const selectedPlats = document.querySelectorAll("#selectedPlats .list-group-item");
+            const platsError = document.getElementById('platsError');
+            platsError.style.display = selectedPlats.length === 0 ? 'block' : 'none';
+        }
     </script>
 </body>
 </html> 
