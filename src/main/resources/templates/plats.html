@@ -27,16 +27,16 @@
             </div>
         </div>
 
-        <form th:action="@{/plats}" method="get" class="row g-3 mb-4">
+        <form th:action="@{/plats}" method="get" class="row g-3 mb-4" id="filterForm">
             <div class="col-md-4">
                 <div class="input-group">
                     <input type="text" class="form-control" name="nom" th:value="${nom}"
-                        placeholder="Rechercher un plat...">
+                        placeholder="Rechercher un plat..." id="searchInput">
                 </div>
             </div>
             
             <div class="col-md-3">
-                <select class="form-select" name="categorie">
+                <select class="form-select" name="categorie" id="categorieSelect">
                     <option value="">Toutes les catégories</option>
                     <option th:each="cat : ${categories}" 
                             th:value="${cat.id}" 
@@ -49,21 +49,15 @@
             <div class="col-md-4">
                 <div class="input-group">
                     <input type="number" class="form-control" name="minCalories" th:value="${minCalories}"
-                        placeholder="Calories min" min="0">
+                        placeholder="Calories min" min="0" id="minCaloriesInput">
                     <input type="number" class="form-control" name="maxCalories" th:value="${maxCalories}"
-                        placeholder="Calories max" min="0">
+                        placeholder="Calories max" min="0" id="maxCaloriesInput">
                 </div>
-
             </div>
-
+            
             <div class="col-md-1">
-                <button class="btn btn-primary w-100" type="submit">
-                    <i class="fa-solid fa-search"></i>
-                </button>
+                <button type="submit" class="btn btn-primary w-100">Filtrer</button>
             </div>
-
-            <input type="hidden" name="size" th:value="${pageSize}">
-            <input type="hidden" name="page" value="0">
         </form>
 
         <div class="table-responsive">
@@ -136,8 +130,21 @@
             
             window.location.href = `/plats?page=0&size=${size}&nom=${nom}&categorie=${categorie}&minCalories=${minCalories}&maxCalories=${maxCalories}`;
         }
+
+        document.getElementById('categorieSelect').addEventListener('change', function() {
+            document.getElementById('filterForm').submit();
+        });
+
+        const inputs = ['searchInput', 'minCaloriesInput', 'maxCaloriesInput'];
+        inputs.forEach(id => {
+            document.getElementById(id).addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    document.getElementById('filterForm').submit();
+                }
+            });
+        });
     </script>
 </body>
 
-</html> 
 </html> 
