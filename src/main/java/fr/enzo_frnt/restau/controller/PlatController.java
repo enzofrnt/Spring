@@ -11,6 +11,9 @@ import org.springframework.web.bind.annotation.*;
 import fr.enzo_frnt.restau.model.Plat;
 import fr.enzo_frnt.restau.repository.PlatRepository;
 import fr.enzo_frnt.restau.repository.CategorieRepository;
+import fr.enzo_frnt.restau.repository.MenuRepository;
+import fr.enzo_frnt.restau.model.Menu;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 @Controller
 @RequestMapping("/plats")
@@ -21,6 +24,9 @@ public class PlatController {
     
     @Autowired
     private CategorieRepository categorieRepository;
+
+    @Autowired
+    private MenuRepository menuRepository;
 
     @GetMapping
     public String listePlats(
@@ -149,8 +155,32 @@ public class PlatController {
     }
 
     @GetMapping("/delete/{id}")
-    public String deletePlat(@PathVariable Long id) {
-        platRepository.deleteById(id);
+    public String deletePlat(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        try {
+            Plat plat = platRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Invalid plat Id:" + id));
+                
+            // Supprimer d'abord les références dans les menus
+            for (Menu menu : menuRepository.findByPlatsContaining(plat)) {
+                menu.getPlats().remove(plat);
+                menuRepository.save(menu);
+            }
+            
+            // Puis supprimer le plat
+            platRepository.deleteById(id);
+            redirectAttributes.addFlashAttribute("success", "Le plat a été supprimé avec succès");
+        } catch (Exception e) {
+            redirectAttributes.addFlashAttribute("error", 
+                "Impossible de supprimer ce plat car il est utilisé dans un ou plusieurs menus");
+        }
         return "redirect:/plats";
+    }
+
+    @GetMapping("/{id}")
+    public String showPlat(@PathVariable Long id, Model model) {
+        Plat plat = platRepository.findById(id)
+            .orElseThrow(() -> new IllegalArgumentException("Invalid plat Id:" + id));
+        model.addAttribute("plat", plat);
+        return "plat-details";
     }
 } 

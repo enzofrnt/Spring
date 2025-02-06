@@ -7,7 +7,11 @@ import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import fr.enzo_frnt.restau.model.Menu;
+import fr.enzo_frnt.restau.model.Plat;
+import org.springframework.stereotype.Repository;
+import java.util.List;
 
+@Repository
 public interface MenuRepository extends JpaRepository<Menu, Long>, JpaSpecificationExecutor<Menu> {
     @Query("SELECT m FROM Menu m WHERE m.prix BETWEEN :min AND :max")
     Page<Menu> findByPrixBetween(@Param("min") double min, @Param("max") double max, Pageable pageable);
@@ -23,4 +27,6 @@ public interface MenuRepository extends JpaRepository<Menu, Long>, JpaSpecificat
 
     @Query("SELECT m FROM Menu m LEFT JOIN m.plats p GROUP BY m ORDER BY SUM(p.nbCalories) DESC")
     Page<Menu> findAllTotalCaloriesDesc(Pageable pageable);
+
+    List<Menu> findByPlatsContaining(Plat plat);
 }

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="fr">
+
+<head th:replace="~{ _layout.html :: header(~{::title}, _, _)}">
+    <title>Détails du plat</title>
+</head>
+
+<body>
+    <nav th:replace="~{ _layout.html :: menu }"></nav>
+    
+    <div class="container mt-3">
+        <div class="card">
+            <div class="card-header">
+                <h2 th:text="${plat.nom}">Nom du plat</h2>
+                <span class="badge bg-secondary" th:text="${plat.categorie.nom}">Catégorie</span>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <h4>Informations nutritionnelles</h4>
+                        <ul class="list-group">
+                            <li class="list-group-item">
+                                <i class="fas fa-fire"></i> Calories: 
+                                <span th:text="${plat.nbCalories}">0</span> kcal
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-cookie"></i> Glucides: 
+                                <span th:text="${plat.nbGlucides}">0</span>g
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-cheese"></i> Lipides: 
+                                <span th:text="${plat.nbLipides}">0</span>g
+                            </li>
+                            <li class="list-group-item">
+                                <i class="fas fa-drumstick-bite"></i> Protéines: 
+                                <span th:text="${plat.nbProteines}">0</span>g
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="card-footer">
+                <div class="d-flex gap-2">
+                    <a th:href="@{/plats}" class="btn btn-secondary">Retour à la liste</a>
+                    <a th:href="@{/plats/edit/{id}(id=${plat.id})}" class="btn btn-primary">
+                        <i class="fa-solid fa-pen-to-square"></i> Modifier
+                    </a>
+                    <a th:href="@{/plats/delete/{id}(id=${plat.id})}" 
+                       class="btn btn-danger"
+                       onclick="return confirm('Êtes-vous sûr de vouloir supprimer ce plat ?')">
+                        <i class="fa-solid fa-trash"></i> Supprimer
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html> 

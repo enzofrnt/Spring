@@ -132,7 +132,9 @@
                 </thead>
                 <tbody>
                     <tr th:each="plat : ${plats}">
-                        <td th:text="${plat.nom}">Nom du plat</td>
+                        <td>
+                            <a th:href="@{/plats/{id}(id=${plat.id})}" th:text="${plat.nom}">Nom du plat</a>
+                        </td>
                         <td th:text="${plat.categorie.nom}">Catégorie</td>
                         <td th:text="${plat.nbCalories}">0</td>
                         <td th:text="${plat.nbGlucides}">0</td>
