@@ -27,36 +27,75 @@
             </div>
         </div>
 
-        <form th:action="@{/plats}" method="get" class="row g-3 mb-4" id="filterForm">
-            <div class="col-md-4">
-                <div class="input-group">
-                    <input type="text" class="form-control" name="nom" th:value="${nom}"
-                        placeholder="Rechercher un plat..." id="searchInput">
+        <form th:action="@{/plats}" method="get" class="mb-4" id="filterForm">
+            <div class="row g-3 mb-3">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <input type="text" class="form-control" name="nom" th:value="${nom}"
+                            placeholder="Rechercher un plat..." id="searchInput">
+                    </div>
+                </div>
+                
+                <div class="col-md-4">
+                    <select class="form-select" name="categorie" id="categorieSelect">
+                        <option value="">Toutes les catégories</option>
+                        <option th:each="cat : ${categories}" 
+                                th:value="${cat.id}" 
+                                th:text="${cat.nom}"
+                                th:selected="${cat.id == categorieId}">
+                        </option>
+                    </select>
                 </div>
             </div>
-            
-            <div class="col-md-3">
-                <select class="form-select" name="categorie" id="categorieSelect">
-                    <option value="">Toutes les catégories</option>
-                    <option th:each="cat : ${categories}" 
-                            th:value="${cat.id}" 
-                            th:text="${cat.nom}"
-                            th:selected="${cat.id == categorieId}">
-                    </option>
-                </select>
-            </div>
-            
-            <div class="col-md-4">
-                <div class="input-group">
-                    <input type="number" class="form-control" name="minCalories" th:value="${minCalories}"
-                        placeholder="Calories min" min="0" id="minCaloriesInput">
-                    <input type="number" class="form-control" name="maxCalories" th:value="${maxCalories}"
-                        placeholder="Calories max" min="0" id="maxCaloriesInput">
+
+            <div class="row g-3">
+                <div class="col-md-11">
+                    <div class="row">
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <span class="input-group-text">Calories</span>
+                                <input type="number" class="form-control" name="minCalories" th:value="${minCalories}"
+                                    placeholder="Min" min="0" id="minCaloriesInput">
+                                <input type="number" class="form-control" name="maxCalories" th:value="${maxCalories}"
+                                    placeholder="Max" min="0" id="maxCaloriesInput">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <span class="input-group-text">Glucides</span>
+                                <input type="number" class="form-control" name="minGlucides" th:value="${minGlucides}"
+                                    placeholder="Min" min="0" id="minGlucidesInput">
+                                <input type="number" class="form-control" name="maxGlucides" th:value="${maxGlucides}"
+                                    placeholder="Max" min="0" id="maxGlucidesInput">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <span class="input-group-text">Lipides</span>
+                                <input type="number" class="form-control" name="minLipides" th:value="${minLipides}"
+                                    placeholder="Min" min="0" id="minLipidesInput">
+                                <input type="number" class="form-control" name="maxLipides" th:value="${maxLipides}"
+                                    placeholder="Max" min="0" id="maxLipidesInput">
+                            </div>
+                        </div>
+                        
+                        <div class="col-md-3">
+                            <div class="input-group">
+                                <span class="input-group-text">Protéines</span>
+                                <input type="number" class="form-control" name="minProteines" th:value="${minProteines}"
+                                    placeholder="Min" min="0" id="minProteinesInput">
+                                <input type="number" class="form-control" name="maxProteines" th:value="${maxProteines}"
+                                    placeholder="Max" min="0" id="maxProteinesInput">
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-            
-            <div class="col-md-1">
-                <button type="submit" class="btn btn-primary w-100">Filtrer</button>
+                
+                <div class="col-md-1">
+                    <button type="submit" class="btn btn-primary w-100">Filtrer</button>
+                </div>
             </div>
         </form>
 
@@ -122,17 +161,49 @@
                         nom=${nom},
                         categorie=${categorieId},
                         minCalories=${minCalories},
-                        maxCalories=${maxCalories}
+                        maxCalories=${maxCalories},
+                        minGlucides=${minGlucides},
+                        maxGlucides=${maxGlucides},
+                        minLipides=${minLipides},
+                        maxLipides=${maxLipides},
+                        minProteines=${minProteines},
+                        maxProteines=${maxProteines}
                     )}">Précédent</a>
                 </li>
                 
                 <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" 
                     th:classappend="${currentPage == i} ? 'active'">
-                    <a class="page-link" th:href="@{/plats(page=${i}, size=${pageSize}, nom=${nom}, categorie=${categorie}, minCalories=${minCalories}, maxCalories=${maxCalories}, sort=${sort}, direction=${direction})}" th:text="${i + 1}">1</a>
+                    <a class="page-link" th:href="@{/plats(
+                        page=${i}, 
+                        size=${pageSize}, 
+                        nom=${nom},
+                        categorie=${categorieId},
+                        minCalories=${minCalories},
+                        maxCalories=${maxCalories},
+                        minGlucides=${minGlucides},
+                        maxGlucides=${maxGlucides},
+                        minLipides=${minLipides},
+                        maxLipides=${maxLipides},
+                        minProteines=${minProteines},
+                        maxProteines=${maxProteines}
+                    )}" th:text="${i + 1}">1</a>
                 </li>
                 
                 <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
-                    <a class="page-link" th:href="@{/plats(page=${currentPage + 1}, size=${pageSize}, nom=${nom}, categorie=${categorie}, minCalories=${minCalories}, maxCalories=${maxCalories})}">Suivant</a>
+                    <a class="page-link" th:href="@{/plats(
+                        page=${currentPage + 1}, 
+                        size=${pageSize}, 
+                        nom=${nom},
+                        categorie=${categorieId},
+                        minCalories=${minCalories},
+                        maxCalories=${maxCalories},
+                        minGlucides=${minGlucides},
+                        maxGlucides=${maxGlucides},
+                        minLipides=${minLipides},
+                        maxLipides=${maxLipides},
+                        minProteines=${minProteines},
+                        maxProteines=${maxProteines}
+                    )}">Suivant</a>
                 </li>
             </ul>
         </nav>
@@ -145,15 +216,32 @@
             const categorie = params.get('categorie') || '';
             const minCalories = params.get('minCalories') || '';
             const maxCalories = params.get('maxCalories') || '';
+            const minGlucides = params.get('minGlucides') || '';
+            const maxGlucides = params.get('maxGlucides') || '';
+            const minLipides = params.get('minLipides') || '';
+            const maxLipides = params.get('maxLipides') || '';
+            const minProteines = params.get('minProteines') || '';
+            const maxProteines = params.get('maxProteines') || '';
             
-            window.location.href = `/plats?page=0&size=${size}&nom=${nom}&categorie=${categorie}&minCalories=${minCalories}&maxCalories=${maxCalories}`;
+            window.location.href = `/plats?page=0&size=${size}&nom=${nom}&categorie=${categorie}`
+                + `&minCalories=${minCalories}&maxCalories=${maxCalories}`
+                + `&minGlucides=${minGlucides}&maxGlucides=${maxGlucides}`
+                + `&minLipides=${minLipides}&maxLipides=${maxLipides}`
+                + `&minProteines=${minProteines}&maxProteines=${maxProteines}`;
         }
 
         document.getElementById('categorieSelect').addEventListener('change', function() {
             document.getElementById('filterForm').submit();
         });
 
-        const inputs = ['searchInput', 'minCaloriesInput', 'maxCaloriesInput'];
+        const inputs = [
+            'searchInput', 
+            'minCaloriesInput', 'maxCaloriesInput',
+            'minGlucidesInput', 'maxGlucidesInput',
+            'minLipidesInput', 'maxLipidesInput',
+            'minProteinesInput', 'maxProteinesInput'
+        ];
+        
         inputs.forEach(id => {
             document.getElementById(id).addEventListener('keypress', function(e) {
                 if (e.key === 'Enter') {

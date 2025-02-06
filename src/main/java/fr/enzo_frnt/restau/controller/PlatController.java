@@ -29,6 +29,12 @@ public class PlatController {
             @RequestParam(name = "categorie", required = false) Long categorieId,
             @RequestParam(name = "minCalories", required = false) Integer minCalories,
             @RequestParam(name = "maxCalories", required = false) Integer maxCalories,
+            @RequestParam(name = "minGlucides", required = false) Integer minGlucides,
+            @RequestParam(name = "maxGlucides", required = false) Integer maxGlucides,
+            @RequestParam(name = "minLipides", required = false) Integer minLipides,
+            @RequestParam(name = "maxLipides", required = false) Integer maxLipides,
+            @RequestParam(name = "minProteines", required = false) Integer minProteines,
+            @RequestParam(name = "maxProteines", required = false) Integer maxProteines,
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size,
             @RequestParam(defaultValue = "nom") String sort,
@@ -58,6 +64,37 @@ public class PlatController {
             spec = spec.and((root, query, cb) -> 
                 cb.lessThanOrEqualTo(root.get("nbCalories"), maxCalories));
         }
+
+        if (minGlucides != null) {
+            spec = spec.and((root, query, cb) -> 
+                cb.greaterThanOrEqualTo(root.get("nbGlucides"), minGlucides));
+        }
+        
+        if (maxGlucides != null) {
+            spec = spec.and((root, query, cb) -> 
+                cb.lessThanOrEqualTo(root.get("nbGlucides"), maxGlucides));
+        }
+
+        if (minLipides != null) {
+            spec = spec.and((root, query, cb) ->
+                cb.greaterThanOrEqualTo(root.get("nbLipides"), minLipides));
+        }
+
+        if (maxLipides != null) {
+            spec = spec.and((root, query, cb) ->
+                cb.lessThanOrEqualTo(root.get("nbLipides"), maxLipides));
+        }
+
+        if (minProteines != null) {
+            spec = spec.and((root, query, cb) ->
+                cb.greaterThanOrEqualTo(root.get("nbProteines"), minProteines));
+        }
+
+        if (maxProteines != null) {
+            spec = spec.and((root, query, cb) ->
+                cb.lessThanOrEqualTo(root.get("nbProteines"), maxProteines));
+        }
+            
         
         Page<Plat> plats = platRepository.findAll(spec, pageRequest);
 
@@ -71,6 +108,12 @@ public class PlatController {
         model.addAttribute("categorieId", categorieId);
         model.addAttribute("minCalories", minCalories);
         model.addAttribute("maxCalories", maxCalories);
+        model.addAttribute("minGlucides", minGlucides);
+        model.addAttribute("maxGlucides", maxGlucides);
+        model.addAttribute("minLipides", minLipides);
+        model.addAttribute("maxLipides", maxLipides);
+        model.addAttribute("minProteines", minProteines);
+        model.addAttribute("maxProteines", maxProteines);
         model.addAttribute("sort", sort);
         model.addAttribute("direction", direction);
         
