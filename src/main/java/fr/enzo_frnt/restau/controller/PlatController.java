@@ -3,6 +3,7 @@ package fr.enzo_frnt.restau.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,8 +30,13 @@ public class PlatController {
             @RequestParam(name = "minCalories", required = false) Integer minCalories,
             @RequestParam(name = "maxCalories", required = false) Integer maxCalories,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "nom") String sort,
+            @RequestParam(defaultValue = "asc") String direction) {
 
+        Sort.Direction dir = Sort.Direction.fromString(direction);
+        PageRequest pageRequest = PageRequest.of(page, size, Sort.by(dir, sort));
+        
         Specification<Plat> spec = Specification.where(null);
         
         if (!nom.isEmpty()) {
@@ -53,7 +59,7 @@ public class PlatController {
                 cb.lessThanOrEqualTo(root.get("nbCalories"), maxCalories));
         }
         
-        Page<Plat> plats = platRepository.findAll(spec, PageRequest.of(page, size));
+        Page<Plat> plats = platRepository.findAll(spec, pageRequest);
 
         model.addAttribute("plats", plats.getContent());
         model.addAttribute("categories", categorieRepository.findAll());
@@ -65,6 +71,8 @@ public class PlatController {
         model.addAttribute("categorieId", categorieId);
         model.addAttribute("minCalories", minCalories);
         model.addAttribute("maxCalories", maxCalories);
+        model.addAttribute("sort", sort);
+        model.addAttribute("direction", direction);
         
         return "plats";
     }

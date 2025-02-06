@@ -67,10 +67,19 @@
             <table class="table table-striped table-hover">
                 <thead>
                     <tr>
-                        <th>Nom</th>
+                        <th class="sortable" th:data-sort="${sort == 'nom' ? (direction == 'asc' ? 'desc' : 'asc') : 'asc'}" 
+                            onclick="sortTable('nom', this.getAttribute('data-sort'))">
+                            Nom <i th:class="${sort == 'nom' ? (direction == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                        </th>
                         <th>Description</th>
-                        <th>Prix</th>
-                        <th>Calories Totales</th>
+                        <th class="sortable" th:data-sort="${sort == 'prix' ? (direction == 'asc' ? 'desc' : 'asc') : 'asc'}" 
+                            onclick="sortTable('prix', this.getAttribute('data-sort'))">
+                            Prix <i th:class="${sort == 'prix' ? (direction == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                        </th>
+                        <th class="sortable" th:data-sort="${sort == 'totalCalories' ? (direction == 'asc' ? 'desc' : 'asc') : 'asc'}" 
+                            onclick="sortTable('totalCalories', this.getAttribute('data-sort'))">
+                            Calories Totales <i th:class="${sort == 'totalCalories' ? (direction == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                        </th>
                         <th>Plats</th>
                         <th>Actions</th>
                     </tr>
@@ -132,6 +141,26 @@
             
             window.location.href = `/menus?page=0&size=${size}&nom=${nom}&minPrix=${minPrix}&maxPrix=${maxPrix}&minCalories=${minCalories}&maxCalories=${maxCalories}`;
         }
+
+        function sortTable(field, direction) {
+            const params = new URLSearchParams(window.location.search);
+            const nom = params.get('nom') || '';
+            const minPrix = params.get('minPrix') || '';
+            const maxPrix = params.get('maxPrix') || '';
+            const minCalories = params.get('minCalories') || '';
+            const maxCalories = params.get('maxCalories') || '';
+            
+            window.location.href = `/menus?page=0&size=${params.get('size') || 10}&nom=${nom}&minPrix=${minPrix}&maxPrix=${maxPrix}&minCalories=${minCalories}&maxCalories=${maxCalories}&sort=${field}&direction=${direction}`;
+        }
     </script>
+
+    <style>
+        .sortable {
+            cursor: pointer;
+        }
+        .sortable:hover {
+            background-color: #545454;
+        }
+    </style>
 </body>
 </html> 

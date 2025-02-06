@@ -17,4 +17,10 @@ public interface MenuRepository extends JpaRepository<Menu, Long>, JpaSpecificat
     
     @Query("SELECT m FROM Menu m WHERE (SELECT SUM(p.nbCalories) FROM m.plats p) BETWEEN :min AND :max")
     Page<Menu> findByTotalCaloriesBetween(@Param("min") int min, @Param("max") int max, Pageable pageable);
+
+    @Query("SELECT m FROM Menu m LEFT JOIN m.plats p GROUP BY m ORDER BY SUM(p.nbCalories) ASC")
+    Page<Menu> findAllTotalCaloriesAsc(Pageable pageable);
+
+    @Query("SELECT m FROM Menu m LEFT JOIN m.plats p GROUP BY m ORDER BY SUM(p.nbCalories) DESC")
+    Page<Menu> findAllTotalCaloriesDesc(Pageable pageable);
 }

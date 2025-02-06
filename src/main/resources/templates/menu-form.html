@@ -35,7 +35,7 @@
                     <div class="col-md-6">
                         <div class="list-group" id="platsList">
                             <div th:each="plat : ${plats}" class="list-group-item">
-                                <div class="d-flex justify-content-between align-items-center">
+                                <div class="d-flex justify-content-between align-items-center cursor-pointer" onclick="togglePlat(this)">
                                     <div>
                                         <h6 class="mb-1" th:text="${plat.nom}">Nom du plat</h6>
                                         <small th:text="${plat.categorie.nom}">Catégorie</small>
@@ -47,7 +47,7 @@
                                             <span th:text="${plat.nbProteines}">0</span>g protéines)
                                         </small>
                                     </div>
-                                    <div class="form-check">
+                                    <div class="form-check" onclick="event.stopPropagation()">
                                         <input class="form-check-input" type="checkbox" 
                                                th:value="${plat.id}" 
                                                name="platsIds"
@@ -80,6 +80,15 @@
             <a href="/menus" class="btn btn-secondary">Annuler</a>
         </form>
     </div>
+
+    <style>
+        .cursor-pointer {
+            cursor: pointer;
+        }
+        .list-group-item:hover {
+            background-color: #545454;
+        }
+    </style>
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
@@ -132,6 +141,12 @@
             // Initialisation
             updateSelectedPlats();
         });
+
+        function togglePlat(element) {
+            const checkbox = element.querySelector('input[type="checkbox"]');
+            checkbox.checked = !checkbox.checked;
+            checkbox.dispatchEvent(new Event('change'));
+        }
     </script>
 </body>
 </html> 

@@ -64,12 +64,30 @@
             <table class="table table-striped table-hover">
                 <thead>
                     <tr>
-                        <th>Nom</th>
-                        <th>Catégorie</th>
-                        <th>Calories</th>
-                        <th>Glucides</th>
-                        <th>Lipides</th>
-                        <th>Protéines</th>
+                        <th class="sortable" th:data-sort="${sort == 'nom' ? (direction == 'asc' ? 'desc' : 'asc') : 'asc'}" 
+                            onclick="sortTable('nom', this.getAttribute('data-sort'))">
+                            Nom <i th:class="${sort == 'nom' ? (direction == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                        </th>
+                        <th class="sortable" th:data-sort="${sort == 'categorie.nom' ? (direction == 'asc' ? 'desc' : 'asc') : 'asc'}" 
+                            onclick="sortTable('categorie.nom', this.getAttribute('data-sort'))">
+                            Catégorie <i th:class="${sort == 'categorie.nom' ? (direction == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                        </th>
+                        <th class="sortable" th:data-sort="${sort == 'nbCalories' ? (direction == 'asc' ? 'desc' : 'asc') : 'asc'}" 
+                            onclick="sortTable('nbCalories', this.getAttribute('data-sort'))">
+                            Calories <i th:class="${sort == 'nbCalories' ? (direction == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                        </th>
+                        <th class="sortable" th:data-sort="${sort == 'nbGlucides' ? (direction == 'asc' ? 'desc' : 'asc') : 'asc'}" 
+                            onclick="sortTable('nbGlucides', this.getAttribute('data-sort'))">
+                            Glucides <i th:class="${sort == 'nbGlucides' ? (direction == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                        </th>
+                        <th class="sortable" th:data-sort="${sort == 'nbLipides' ? (direction == 'asc' ? 'desc' : 'asc') : 'asc'}" 
+                            onclick="sortTable('nbLipides', this.getAttribute('data-sort'))">
+                            Lipides <i th:class="${sort == 'nbLipides' ? (direction == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                        </th>
+                        <th class="sortable" th:data-sort="${sort == 'nbProteines' ? (direction == 'asc' ? 'desc' : 'asc') : 'asc'}" 
+                            onclick="sortTable('nbProteines', this.getAttribute('data-sort'))">
+                            Protéines <i th:class="${sort == 'nbProteines' ? (direction == 'asc' ? 'fas fa-sort-up' : 'fas fa-sort-down') : 'fas fa-sort'}"></i>
+                        </th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -110,7 +128,7 @@
                 
                 <li class="page-item" th:each="i : ${#numbers.sequence(0, totalPages - 1)}" 
                     th:classappend="${currentPage == i} ? 'active'">
-                    <a class="page-link" th:href="@{/plats(page=${i}, size=${pageSize}, nom=${nom}, categorie=${categorie}, minCalories=${minCalories}, maxCalories=${maxCalories})}" th:text="${i + 1}">1</a>
+                    <a class="page-link" th:href="@{/plats(page=${i}, size=${pageSize}, nom=${nom}, categorie=${categorie}, minCalories=${minCalories}, maxCalories=${maxCalories}, sort=${sort}, direction=${direction})}" th:text="${i + 1}">1</a>
                 </li>
                 
                 <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
@@ -144,7 +162,23 @@
                 }
             });
         });
+
+        function sortTable(field, direction) {
+            const currentUrl = new URL(window.location.href);
+            currentUrl.searchParams.set('sort', field);
+            currentUrl.searchParams.set('direction', direction);
+            window.location.href = currentUrl.toString();
+        }
     </script>
+
+    <style>
+        .sortable {
+            cursor: pointer;
+        }
+        .sortable:hover {
+            background-color: #545454;
+        }
+    </style>
 </body>
 
 </html> 

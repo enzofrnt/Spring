@@ -3,6 +3,7 @@ package fr.enzo_frnt.restau.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -38,8 +39,43 @@ public class MenuController {
             @RequestParam(name = "minCalories", required = false) Integer minCalories,
             @RequestParam(name = "maxCalories", required = false) Integer maxCalories,
             @RequestParam(defaultValue = "0") int page,
-            @RequestParam(defaultValue = "10") int size) {
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "nom") String sort,
+            @RequestParam(defaultValue = "asc") String direction) {
 
+        PageRequest pageRequest = PageRequest.of(page, size);
+        Page<Menu> menus;
+        
+        if (sort.equals("totalCalories")) {
+            if (direction.equals("asc")) {
+                menus = menuRepository.findAllTotalCaloriesAsc(pageRequest);
+            } else {
+                menus = menuRepository.findAllTotalCaloriesDesc(pageRequest);
+            }
+        } else {
+            Sort.Direction dir = Sort.Direction.fromString(direction);
+            pageRequest = PageRequest.of(page, size, Sort.by(dir, sort));
+            menus = menuRepository.findAll(createSpecification(nom, minPrix, maxPrix, minCalories, maxCalories), pageRequest);
+        }
+
+        model.addAttribute("menus", menus.getContent());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("pageSize", size);
+        model.addAttribute("totalPages", menus.getTotalPages());
+        model.addAttribute("totalItems", menus.getTotalElements());
+        model.addAttribute("nom", nom);
+        model.addAttribute("minPrix", minPrix);
+        model.addAttribute("maxPrix", maxPrix);
+        model.addAttribute("minCalories", minCalories);
+        model.addAttribute("maxCalories", maxCalories);
+        model.addAttribute("sort", sort);
+        model.addAttribute("direction", direction);
+        
+        return "menus";
+    }
+
+    private Specification<Menu> createSpecification(String nom, Double minPrix, Double maxPrix, 
+                                                     Integer minCalories, Integer maxCalories) {
         Specification<Menu> spec = Specification.where(null);
         
         if (!nom.isEmpty()) {
@@ -72,20 +108,7 @@ public class MenuController {
             });
         }
         
-        Page<Menu> menus = menuRepository.findAll(spec, PageRequest.of(page, size));
-
-        model.addAttribute("menus", menus.getContent());
-        model.addAttribute("currentPage", page);
-        model.addAttribute("pageSize", size);
-        model.addAttribute("totalPages", menus.getTotalPages());
-        model.addAttribute("totalItems", menus.getTotalElements());
-        model.addAttribute("nom", nom);
-        model.addAttribute("minPrix", minPrix);
-        model.addAttribute("maxPrix", maxPrix);
-        model.addAttribute("minCalories", minCalories);
-        model.addAttribute("maxCalories", maxCalories);
-        
-        return "menus";
+        return spec;
     }
 
     @GetMapping("/create")
