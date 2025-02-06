@@ -3,12 +3,13 @@ package fr.enzo_frnt.restau.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import fr.enzo_frnt.restau.model.Plat;
 import java.util.List;
 
-public interface PlatRepository extends JpaRepository<Plat, Long> {
+public interface PlatRepository extends JpaRepository<Plat, Long>, JpaSpecificationExecutor<Plat> {
     @Query("SELECT p FROM Plat p WHERE p.nom LIKE :x")
     Page<Plat> findByNomLike(@Param("x") String nom, Pageable pageable);
     

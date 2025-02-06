@@ -3,6 +3,7 @@ package fr.enzo_frnt.restau.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -30,19 +31,29 @@ public class PlatController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-        Page<Plat> plats;
+        Specification<Plat> spec = Specification.where(null);
         
         if (!nom.isEmpty()) {
-            plats = platRepository.findByNomLike("%" + nom + "%", PageRequest.of(page, size));
-        } else if (categorieId != null) {
-            plats = platRepository.findByCategorie(categorieId, PageRequest.of(page, size));
-        } else if (minCalories != null || maxCalories != null) {
-            int min = minCalories != null ? minCalories : 0;
-            int max = maxCalories != null ? maxCalories : Integer.MAX_VALUE;
-            plats = platRepository.findByNbCaloriesBetween(min, max, PageRequest.of(page, size));
-        } else {
-            plats = platRepository.findAll(PageRequest.of(page, size));
+            spec = spec.and((root, query, cb) -> 
+                cb.like(cb.lower(root.get("nom")), "%" + nom.toLowerCase() + "%"));
         }
+        
+        if (categorieId != null) {
+            spec = spec.and((root, query, cb) -> 
+                cb.equal(root.get("categorie").get("id"), categorieId));
+        }
+        
+        if (minCalories != null) {
+            spec = spec.and((root, query, cb) -> 
+                cb.greaterThanOrEqualTo(root.get("nbCalories"), minCalories));
+        }
+        
+        if (maxCalories != null) {
+            spec = spec.and((root, query, cb) -> 
+                cb.lessThanOrEqualTo(root.get("nbCalories"), maxCalories));
+        }
+        
+        Page<Plat> plats = platRepository.findAll(spec, PageRequest.of(page, size));
 
         model.addAttribute("plats", plats.getContent());
         model.addAttribute("categories", categorieRepository.findAll());

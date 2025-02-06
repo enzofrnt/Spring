@@ -3,6 +3,7 @@ package fr.enzo_frnt.restau.controller;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -10,6 +11,8 @@ import fr.enzo_frnt.restau.model.Menu;
 import fr.enzo_frnt.restau.model.Plat;
 import fr.enzo_frnt.restau.repository.MenuRepository;
 import fr.enzo_frnt.restau.repository.PlatRepository;
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.Expression;
 import fr.enzo_frnt.restau.repository.CategorieRepository;
 import java.util.List;
 
@@ -37,21 +40,38 @@ public class MenuController {
             @RequestParam(defaultValue = "0") int page,
             @RequestParam(defaultValue = "10") int size) {
 
-        Page<Menu> menus;
+        Specification<Menu> spec = Specification.where(null);
         
         if (!nom.isEmpty()) {
-            menus = menuRepository.findByNomLike("%" + nom + "%", PageRequest.of(page, size));
-        } else if (minPrix != null || maxPrix != null) {
-            double min = minPrix != null ? minPrix : 0;
-            double max = maxPrix != null ? maxPrix : Double.MAX_VALUE;
-            menus = menuRepository.findByPrixBetween(min, max, PageRequest.of(page, size));
-        } else if (minCalories != null || maxCalories != null) {
+            spec = spec.and((root, query, cb) -> 
+                cb.like(cb.lower(root.get("nom")), "%" + nom.toLowerCase() + "%"));
+        }
+        
+        if (minPrix != null) {
+            spec = spec.and((root, query, cb) -> 
+                cb.greaterThanOrEqualTo(root.get("prix"), minPrix));
+        }
+        
+        if (maxPrix != null) {
+            spec = spec.and((root, query, cb) -> 
+                cb.lessThanOrEqualTo(root.get("prix"), maxPrix));
+        }
+        
+        if (minCalories != null || maxCalories != null) {
             int min = minCalories != null ? minCalories : 0;
             int max = maxCalories != null ? maxCalories : Integer.MAX_VALUE;
-            menus = menuRepository.findByTotalCaloriesBetween(min, max, PageRequest.of(page, size));
-        } else {
-            menus = menuRepository.findAll(PageRequest.of(page, size));
+            spec = spec.and((root, query, cb) -> {
+                Join<Menu, Plat> platsJoin = root.join("plats");
+                Expression<Integer> totalCalories = cb.sum(platsJoin.get("nbCalories"));
+                query.groupBy(root);
+                return cb.and(
+                    cb.greaterThanOrEqualTo(totalCalories, min),
+                    cb.lessThanOrEqualTo(totalCalories, max)
+                );
+            });
         }
+        
+        Page<Menu> menus = menuRepository.findAll(spec, PageRequest.of(page, size));
 
         model.addAttribute("menus", menus.getContent());
         model.addAttribute("currentPage", page);
