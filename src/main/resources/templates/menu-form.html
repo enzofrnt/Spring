@@ -87,56 +87,57 @@
 
     <script>
         function togglePlat(element) {
-            const checkbox = element.querySelector('input[type="checkbox"]');
-            checkbox.checked = !checkbox.checked;
-            updateSelectedPlats();
+          const checkbox = element.querySelector('input[type="checkbox"]');
+          checkbox.checked = !checkbox.checked;
+          updateSelectedPlats();
         }
-
+      
         function updateSelectedPlats() {
-            const selectedPlatsDiv = document.getElementById('selectedPlats');
-            const totalCaloriesSpan = document.getElementById('totalCalories');
-            const totalGlucidesSpan = document.getElementById('totalGlucides');
-            const totalLipidesSpan = document.getElementById('totalLipides');
-            const totalProteinesSpan = document.getElementById('totalProteines');
-
-            const checkboxes = document.querySelectorAll('input[name="platsIds"]:checked');
-            let totalCalories = 0, totalGlucides = 0, totalLipides = 0, totalProteines = 0;
-            let htmlContent = '';
-            
-            checkboxes.forEach((checkbox) => {
-                const item = checkbox.closest('.list-group-item');
-                if (item) {
-                    const platName = item.querySelector('h6').textContent;
-                    const nutritionText = item.querySelector('small').textContent;
-                    const caloriesMatch = nutritionText.match(/(\d+)\s*kcal/);
-                    const glucidesMatch = nutritionText.match(/(\d+)g\s*glucides/);
-                    const lipidesMatch = nutritionText.match(/(\d+)g\s*lipides/);
-                    const proteinesMatch = nutritionText.match(/(\d+)g\s*protéines/);
-                    const calories = caloriesMatch ? parseInt(caloriesMatch[1]) : 0;
-                    const glucides = glucidesMatch ? parseInt(glucidesMatch[1]) : 0;
-                    const lipides = lipidesMatch ? parseInt(lipidesMatch[1]) : 0;
-                    const proteines = proteinesMatch ? parseInt(proteinesMatch[1]) : 0;
-                    totalCalories += calories;
-                    totalGlucides += glucides;
-                    totalLipides += lipides;
-                    totalProteines += proteines;
-                    htmlContent += `<div class="mb-2"><strong>${platName}</strong><br>
-                                    <small>${calories} kcal (${glucides}g glucides, ${lipides}g lipides, ${proteines}g protéines)</small></div>`;
-                }
-            });
-            
-            selectedPlatsDiv.innerHTML = htmlContent;
-            totalCaloriesSpan.textContent = totalCalories;
-            totalGlucidesSpan.textContent = totalGlucides;
-            totalLipidesSpan.textContent = totalLipides;
-            totalProteinesSpan.textContent = totalProteines;
+          const selectedPlatsDiv = document.getElementById('selectedPlats');
+          const totalCaloriesSpan = document.getElementById('totalCalories');
+          const totalGlucidesSpan = document.getElementById('totalGlucides');
+          const totalLipidesSpan = document.getElementById('totalLipides');
+          const totalProteinesSpan = document.getElementById('totalProteines');
+      
+          const checkboxes = document.querySelectorAll('input[name="platsIds"]:checked');
+          let totalCalories = 0, totalGlucides = 0, totalLipides = 0, totalProteines = 0;
+          let htmlContent = '';
+      
+          checkboxes.forEach((checkbox) => {
+            const item = checkbox.closest('.list-group-item');
+            if (item) {
+              const platName = item.querySelector('h6').textContent.trim();
+              // Utiliser les span du <small> pour récupérer directement les informations nutritionnelles
+              const spans = item.querySelectorAll('small span');
+              const calories = spans.length > 0 ? parseInt(spans[0].textContent.trim()) : 0;
+              const glucides = spans.length > 1 ? parseInt(spans[1].textContent.trim()) : 0;
+              const lipides = spans.length > 2 ? parseInt(spans[2].textContent.trim()) : 0;
+              const proteines = spans.length > 3 ? parseInt(spans[3].textContent.trim()) : 0;
+      
+              totalCalories += calories;
+              totalGlucides += glucides;
+              totalLipides += lipides;
+              totalProteines += proteines;
+      
+              htmlContent += `<div class="mb-2">
+                                <strong>${platName}</strong><br>
+                                <small>${calories} kcal (${glucides}g glucides, ${lipides}g lipides, ${proteines}g protéines)</small>
+                              </div>`;
+            }
+          });
+      
+          selectedPlatsDiv.innerHTML = htmlContent;
+          totalCaloriesSpan.textContent = totalCalories;
+          totalGlucidesSpan.textContent = totalGlucides;
+          totalLipidesSpan.textContent = totalLipides;
+          totalProteinesSpan.textContent = totalProteines;
         }
-
+      
         document.addEventListener('DOMContentLoaded', function() {
-            updateSelectedPlats();
-            document.querySelectorAll('input[name="platsIds"]').forEach((checkbox) => {
-                checkbox.addEventListener('change', updateSelectedPlats);
-            });
+          updateSelectedPlats();
+          document.querySelectorAll('input[name="platsIds"]').forEach((checkbox) => {
+            checkbox.addEventListener('change', updateSelectedPlats);
+          });
         });
     </script>
 </body>
