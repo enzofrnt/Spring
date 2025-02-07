@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org" lang="fr">
-
 <head th:replace="~{ _layout.html :: header(~{::title}, _, _)}">
     <title th:text="${menu.id == null ? 'Créer un menu' : 'Modifier le menu'}">Menu Form</title>
     <style>
@@ -57,7 +56,8 @@
         <form th:action="@{${menu.id == null ? '/menus/create' : '/menus/edit/' + menu.id}}" 
               th:object="${menu}" method="post" class="needs-validation" novalidate
               onsubmit="return validateForm(event)">
-            
+
+            <!-- CHAMPS DU FORMULAIRE PRINCIPAL -->
             <div class="mb-3">
                 <label for="nom" class="form-label">Nom *</label>
                 <input type="text" class="form-control" id="nom" th:field="*{nom}" required>
@@ -76,15 +76,22 @@
                 <div class="invalid-feedback">Le prix doit être supérieur à 0</div>
             </div>
 
+            <!-- FILTRES ET LISTES DE PLATS -->
             <div class="row">
+                <!-- Plats disponibles -->
                 <div class="col-md-6">
                     <div class="card mb-3">
                         <div class="card-header bg-light">
                             <div class="d-flex flex-column gap-2">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <h5 class="mb-0">Plats disponibles</h5>
+
+                                    <!-- *** MODIFICATION ***  
+                                         On n'ajoute pas de name="" sur ces champs
+                                         et on empêche la soumission via JS. -->
                                     <div class="d-flex gap-2" style="max-width: 450px;">
-                                        <select class="form-select form-select-sm shadow-sm" id="categorieFilter" onchange="filterPlats()">
+                                        <select class="form-select form-select-sm shadow-sm" id="categorieFilter"
+                                                onchange="filterPlats()">
                                             <option value="">Toutes les catégories</option>
                                             <option th:each="cat : ${categories}" 
                                                     th:value="${cat.nom}" 
@@ -148,14 +155,18 @@
                                             </small>
                                         </div>
                                         <div>
-                                            <button type="button" class="action-btn add-btn btn btn-success" onclick="moveToSelected(this.parentElement.parentElement); event.stopPropagation();">
+                                            <button type="button" class="action-btn add-btn btn btn-success"
+                                                    onclick="moveToSelected(this.parentElement.parentElement); event.stopPropagation();">
                                                 <i class="bi bi-plus-circle"></i>
                                             </button>
-                                            <button type="button" class="action-btn remove-btn btn btn-danger" onclick="moveToAvailable(this.parentElement.parentElement); event.stopPropagation();">
+                                            <button type="button" class="action-btn remove-btn btn btn-danger"
+                                                    onclick="moveToAvailable(this.parentElement.parentElement); event.stopPropagation();">
                                                 <i class="bi bi-x-circle"></i>
                                             </button>
                                         </div>
-                                        <input type="checkbox" th:value="${plat.id}" name="platsIds" style="display: none;" th:checked="${menu.plats.contains(plat)}">
+                                        <!-- On envoie quand même l'ID si coché -->
+                                        <input type="checkbox" th:value="${plat.id}" name="platsIds" style="display: none;"
+                                               th:checked="${menu.plats.contains(plat)}">
                                     </div>
                                 </div>
                             </div>
@@ -163,6 +174,7 @@
                     </div>
                 </div>
                 
+                <!-- Plats sélectionnés -->
                 <div class="col-md-6">
                     <div class="card mb-3">
                         <div class="card-header">
@@ -184,6 +196,7 @@
                 </div>
             </div>
 
+            <!-- Boutons du formulaire principal -->
             <button type="submit" class="btn btn-primary">Enregistrer</button>
             <a href="/menus" class="btn btn-secondary">Annuler</a>
         </form>
@@ -191,14 +204,13 @@
 
     <script>
         function moveToSelected(item) {
-            // On s'assure de récupérer l'élément list-group-item parent
             const listGroupItem = item.closest('.list-group-item');
             if (!listGroupItem || listGroupItem.parentElement.id === 'selectedPlats') return;
             
             const checkbox = listGroupItem.querySelector('input[type="checkbox"]');
             checkbox.checked = true;
             
-            // Masquer le bouton d'ajout et afficher le bouton de suppression
+            // Bascule des boutons
             const addBtn = listGroupItem.querySelector('.add-btn');
             const removeBtn = listGroupItem.querySelector('.remove-btn');
             if (addBtn) addBtn.style.display = 'none';
@@ -207,7 +219,7 @@
             listGroupItem.classList.remove('not-selected');
             listGroupItem.classList.add('selected');
             
-            // Créer une nouvelle div list-group si elle n'existe pas
+            // Créer une liste group dans la zone "selectedPlats" si elle n'existe pas
             let listGroup = document.querySelector("#selectedPlats .list-group");
             if (!listGroup) {
                 listGroup = document.createElement('div');
@@ -220,14 +232,13 @@
         }
         
         function moveToAvailable(item) {
-            // On s'assure de récupérer l'élément list-group-item parent
             const listGroupItem = item.closest('.list-group-item');
             if (!listGroupItem || listGroupItem.parentElement.parentElement.id === 'platsList') return;
             
             const checkbox = listGroupItem.querySelector('input[type="checkbox"]');
             checkbox.checked = false;
             
-            // Masquer le bouton de suppression et afficher le bouton d'ajout
+            // Bascule des boutons
             const addBtn = listGroupItem.querySelector('.add-btn');
             const removeBtn = listGroupItem.querySelector('.remove-btn');
             if (addBtn) addBtn.style.display = 'flex';
@@ -236,10 +247,9 @@
             listGroupItem.classList.remove('selected');
             listGroupItem.classList.add('not-selected');
             
-            // Déplacer vers la liste des plats disponibles
+            // Retour dans la liste disponible
             document.querySelector("#platsList").appendChild(listGroupItem);
             
-            // Vérifier si la list-group des plats sélectionnés est vide
             const selectedListGroup = document.querySelector("#selectedPlats .list-group");
             if (selectedListGroup && selectedListGroup.children.length === 0) {
                 selectedListGroup.remove();
@@ -268,46 +278,21 @@
             document.getElementById("totalProteines").textContent = totalProteines;
         }
         
-        document.addEventListener("DOMContentLoaded", function() {
-            const availableItems = document.querySelectorAll("#platsList .list-group-item");
-            availableItems.forEach(item => {
-                // Initialiser l'affichage des boutons
-                const addBtn = item.querySelector('.add-btn');
-                const removeBtn = item.querySelector('.remove-btn');
-                const checkbox = item.querySelector('input[type="checkbox"]');
-                
-                if (checkbox.checked) {
-                    // Si le plat est déjà sélectionné
-                    if (addBtn) addBtn.style.display = 'none';
-                    if (removeBtn) removeBtn.style.display = 'flex';
-                    moveToSelected(item);
-                } else {
-                    // Si le plat n'est pas sélectionné
-                    if (addBtn) addBtn.style.display = 'flex';
-                    if (removeBtn) removeBtn.style.display = 'none';
-                }
-                
-                item.addEventListener("click", function() {
-                    moveToSelected(item);
-                });
-            });
-            
-            updateTotals();
-
-            // Liste des IDs des champs de filtrage
+        // *** MODIFICATION ***
+        // Empêche la touche "Entrée" dans les champs de filtre de soumettre le formulaire
+        // et relance simplement la fonction de filtrage.
+        function preventSubmitOnEnterForFilters() {
             const filterInputs = [
-                'searchPlats',
+                'categorieFilter', 'searchPlats',
                 'minCalories', 'maxCalories',
                 'minGlucides', 'maxGlucides',
                 'minLipides', 'maxLipides',
                 'minProteines', 'maxProteines'
             ];
-            
-            // Empêcher la soumission du formulaire sur la touche Entrée pour les champs de filtrage
             filterInputs.forEach(id => {
                 const input = document.getElementById(id);
                 if (input) {
-                    input.addEventListener('keypress', function(e) {
+                    input.addEventListener('keydown', function(e) {
                         if (e.key === 'Enter') {
                             e.preventDefault();
                             filterPlats();
@@ -315,32 +300,91 @@
                     });
                 }
             });
+        }
+
+        document.addEventListener("DOMContentLoaded", function() {
+            const availableItems = document.querySelectorAll("#platsList .list-group-item");
+            availableItems.forEach(item => {
+                const addBtn = item.querySelector('.add-btn');
+                const removeBtn = item.querySelector('.remove-btn');
+                const checkbox = item.querySelector('input[type="checkbox"]');
+                
+                if (checkbox.checked) {
+                    if (addBtn) addBtn.style.display = 'none';
+                    if (removeBtn) removeBtn.style.display = 'flex';
+                    moveToSelected(item);
+                } else {
+                    if (addBtn) addBtn.style.display = 'flex';
+                    if (removeBtn) removeBtn.style.display = 'none';
+                }
+
+                // Déplacer au clic
+                item.addEventListener("click", function() {
+                    moveToSelected(item);
+                });
+            });
+            
+            updateTotals();
+            preventSubmitOnEnterForFilters(); // *** MODIFICATION ***
         });
 
+        // Validation du formulaire : exclure les champs de filtre
         function validateForm(event) {
             const form = event.target;
-            const selectedPlats = document.querySelectorAll("#selectedPlats .list-group-item");
-            const platsError = document.getElementById('platsError');
             
+            // *** MODIFICATION ***
+            // On désactive temporairement les champs de filtre pour qu'ils ne soient pas validés.
+            const filterFields = [
+                'categorieFilter', 'searchPlats',
+                'minCalories', 'maxCalories',
+                'minGlucides', 'maxGlucides',
+                'minLipides', 'maxLipides',
+                'minProteines', 'maxProteines'
+            ];
+            filterFields.forEach(id => {
+                const fld = document.getElementById(id);
+                if (fld) {
+                    fld.disabled = true;
+                }
+            });
+
+            // Vérifie la validité du formulaire (hors champs désactivés)
+            const selectedPlats = document.querySelectorAll("#selectedPlats .list-group-item");
             if (!form.checkValidity() || selectedPlats.length === 0) {
                 event.preventDefault();
                 event.stopPropagation();
-                
+
+                // Affiche l'erreur si aucun plat n'est sélectionné
                 if (selectedPlats.length === 0) {
-                    platsError.style.display = 'block';
+                    document.getElementById('platsError').style.display = 'block';
                 } else {
-                    platsError.style.display = 'none';
+                    document.getElementById('platsError').style.display = 'none';
                 }
-                
+
                 form.classList.add('was-validated');
+
+                // On réactive les champs de filtre
+                filterFields.forEach(id => {
+                    const fld = document.getElementById(id);
+                    if (fld) {
+                        fld.disabled = false;
+                    }
+                });
                 return false;
             }
-            
-            platsError.style.display = 'none';
+
+            // Tout est bon, réactiver les champs de filtre pour ne pas perdre l'état
+            filterFields.forEach(id => {
+                const fld = document.getElementById(id);
+                if (fld) {
+                    fld.disabled = false;
+                }
+            });
+
+            document.getElementById('platsError').style.display = 'none';
             return true;
         }
         
-        // Ajoutons aussi la gestion de l'erreur lors du déplacement des plats
         function updatePlatsError() {
             const selectedPlats = document.querySelectorAll("#selectedPlats .list-group-item");
             const platsError = document.getElementById('platsError');
@@ -353,7 +397,6 @@
             const searchFilter = searchInput.value.toLowerCase();
             const categorieFilter = categorieSelect.value.toLowerCase();
             
-            // Récupération des valeurs des filtres nutritionnels
             const minCalories = document.getElementById('minCalories').value;
             const maxCalories = document.getElementById('maxCalories').value;
             const minGlucides = document.getElementById('minGlucides').value;
@@ -375,20 +418,15 @@
                 const lipides = parseInt(spans[2].textContent);
                 const proteines = parseInt(spans[3].textContent);
                 
-                const matchSearch = nom.includes(searchFilter) || 
-                                  categorie.includes(searchFilter);
+                const matchSearch = nom.includes(searchFilter) || categorie.includes(searchFilter);
                 const matchCategorie = categorieFilter === '' || categorie === categorieFilter;
                 
-                const matchCalories = (!minCalories || calories >= minCalories) && 
-                                    (!maxCalories || calories <= maxCalories);
-                const matchGlucides = (!minGlucides || glucides >= minGlucides) && 
-                                    (!maxGlucides || glucides <= maxGlucides);
-                const matchLipides = (!minLipides || lipides >= minLipides) && 
-                                   (!maxLipides || lipides <= maxLipides);
-                const matchProteines = (!minProteines || proteines >= minProteines) && 
-                                     (!maxProteines || proteines <= maxProteines);
+                const matchCalories = (!minCalories || calories >= minCalories) && (!maxCalories || calories <= maxCalories);
+                const matchGlucides = (!minGlucides || glucides >= minGlucides) && (!maxGlucides || glucides <= maxGlucides);
+                const matchLipides = (!minLipides || lipides >= minLipides) && (!maxLipides || lipides <= maxLipides);
+                const matchProteines = (!minProteines || proteines >= minProteines) && (!maxProteines || proteines <= maxProteines);
                 
-                if (matchSearch && matchCategorie && matchCalories && 
+                if (matchSearch && matchCategorie && matchCalories &&
                     matchGlucides && matchLipides && matchProteines) {
                     plat.style.display = '';
                 } else {
@@ -420,8 +458,9 @@
         function updateAfterMove() {
             updateTotals();
             updatePlatsError();
-            filterPlats(); // On réapplique les filtres actuels au lieu de les réinitialiser
+            // On réapplique les filtres pour masquer/afficher correctement
+            filterPlats();
         }
     </script>
 </body>
-</html> 
+</html>
