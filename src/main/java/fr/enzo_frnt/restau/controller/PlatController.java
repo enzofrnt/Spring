@@ -15,6 +15,11 @@ import fr.enzo_frnt.restau.repository.MenuRepository;
 import fr.enzo_frnt.restau.model.Menu;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+/**
+ * Contrôleur gérant les opérations CRUD et la recherche pour les plats du restaurant.
+ * Permet la gestion complète des plats incluant la création, modification, suppression et visualisation,
+ * ainsi que des fonctionnalités de recherche et de filtrage avancées sur les valeurs nutritionnelles.
+ */
 @Controller
 @RequestMapping("/plats")
 public class PlatController {
@@ -28,6 +33,26 @@ public class PlatController {
     @Autowired
     private MenuRepository menuRepository;
 
+    /**
+     * Affiche la liste des plats avec options de filtrage et pagination.
+     *
+     * @param model Modèle Spring pour transmettre les données à la vue
+     * @param nom Filtre sur le nom du plat (optionnel)
+     * @param categorieId Filtre par catégorie (optionnel)
+     * @param minCalories Calories minimales pour le filtrage (optionnel)
+     * @param maxCalories Calories maximales pour le filtrage (optionnel)
+     * @param minGlucides Glucides minimaux pour le filtrage (optionnel)
+     * @param maxGlucides Glucides maximaux pour le filtrage (optionnel)
+     * @param minLipides Lipides minimaux pour le filtrage (optionnel)
+     * @param maxLipides Lipides maximaux pour le filtrage (optionnel)
+     * @param minProteines Protéines minimales pour le filtrage (optionnel)
+     * @param maxProteines Protéines maximales pour le filtrage (optionnel)
+     * @param page Numéro de la page courante (défaut: 0)
+     * @param size Nombre d'éléments par page (défaut: 10)
+     * @param sort Champ de tri (défaut: "nom")
+     * @param direction Direction du tri (défaut: "asc")
+     * @return Vue "plats" avec la liste filtrée et paginée
+     */
     @GetMapping
     public String listePlats(
             Model model,
@@ -126,6 +151,12 @@ public class PlatController {
         return "plats";
     }
 
+    /**
+     * Affiche le formulaire de création d'un nouveau plat.
+     *
+     * @param model Modèle Spring pour transmettre les données à la vue
+     * @return Vue "plat-form" pour la création
+     */
     @GetMapping("/create")
     public String showCreateForm(Model model) {
         model.addAttribute("plat", new Plat());
@@ -133,12 +164,26 @@ public class PlatController {
         return "plat-form";
     }
 
+    /**
+     * Traite la création d'un nouveau plat.
+     *
+     * @param plat Plat à créer
+     * @return Redirection vers la liste des plats
+     */
     @PostMapping("/create")
     public String createPlat(@ModelAttribute Plat plat) {
         platRepository.save(plat);
         return "redirect:/plats";
     }
 
+    /**
+     * Affiche le formulaire de modification d'un plat existant.
+     *
+     * @param id ID du plat à modifier
+     * @param model Modèle Spring
+     * @return Vue "plat-form" pour la modification
+     * @throws IllegalArgumentException si l'ID du plat est invalide
+     */
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Long id, Model model) {
         Plat plat = platRepository.findById(id)
@@ -148,12 +193,27 @@ public class PlatController {
         return "plat-form";
     }
 
+    /**
+     * Traite la modification d'un plat existant.
+     *
+     * @param id ID du plat à modifier
+     * @param plat Plat modifié
+     * @return Redirection vers la liste des plats
+     */
     @PostMapping("/edit/{id}")
     public String updatePlat(@PathVariable Long id, @ModelAttribute Plat plat) {
         platRepository.save(plat);
         return "redirect:/plats";
     }
 
+    /**
+     * Supprime un plat et met à jour les menus associés.
+     * Retire d'abord le plat des menus qui l'utilisent avant de le supprimer.
+     *
+     * @param id ID du plat à supprimer
+     * @param redirectAttributes Pour ajouter des messages flash
+     * @return Redirection vers la liste des plats
+     */
     @GetMapping("/delete/{id}")
     public String deletePlat(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         try {
@@ -176,6 +236,14 @@ public class PlatController {
         return "redirect:/plats";
     }
 
+    /**
+     * Affiche les détails d'un plat spécifique.
+     *
+     * @param id ID du plat à afficher
+     * @param model Modèle Spring
+     * @return Vue "plat-details"
+     * @throws IllegalArgumentException si l'ID du plat est invalide
+     */
     @GetMapping("/{id}")
     public String showPlat(@PathVariable Long id, Model model) {
         Plat plat = platRepository.findById(id)

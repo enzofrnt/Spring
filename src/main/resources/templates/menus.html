@@ -136,6 +136,15 @@
     </div>
 
     <script>
+        /**
+         * Gère le changement du nombre d'éléments affichés par page
+         * @param {number} size - Le nouveau nombre d'éléments par page
+         * 
+         * Cette fonction :
+         * 1. Récupère tous les paramètres de filtrage actuels de l'URL
+         * 2. Redirige vers la première page avec la nouvelle taille de page
+         * tout en conservant les filtres existants
+         */
         function changePageSize(size) {
             const params = new URLSearchParams(window.location.search);
             const nom = params.get('nom') || '';
@@ -147,6 +156,16 @@
             window.location.href = `/menus?page=0&size=${size}&nom=${nom}&minPrix=${minPrix}&maxPrix=${maxPrix}&minCalories=${minCalories}&maxCalories=${maxCalories}`;
         }
 
+        /**
+         * Gère le tri des colonnes du tableau
+         * @param {string} field - Le nom du champ à trier (nom, prix, totalCalories)
+         * @param {string} direction - La direction du tri ('asc' ou 'desc')
+         * 
+         * Cette fonction :
+         * 1. Récupère tous les paramètres de filtrage actuels de l'URL
+         * 2. Redirige vers la première page en appliquant le nouveau tri
+         * tout en conservant les filtres et la taille de page existants
+         */
         function sortTable(field, direction) {
             const params = new URLSearchParams(window.location.search);
             const nom = params.get('nom') || '';

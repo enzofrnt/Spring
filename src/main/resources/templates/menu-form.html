@@ -43,8 +43,6 @@
             left: 10px;
         }
     </style>
-    <!-- N'oubliez pas d'inclure Bootstrap Icons -->
-    <!-- <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.5/font/bootstrap-icons.css"> -->
 </head>
 
 <body>
@@ -57,7 +55,6 @@
               th:object="${menu}" method="post" class="needs-validation" novalidate
               onsubmit="return validateForm(event)">
 
-            <!-- CHAMPS DU FORMULAIRE PRINCIPAL -->
             <div class="mb-3">
                 <label for="nom" class="form-label">Nom *</label>
                 <input type="text" class="form-control" id="nom" th:field="*{nom}" required>
@@ -76,9 +73,7 @@
                 <div class="invalid-feedback">Le prix doit être supérieur à 0</div>
             </div>
 
-            <!-- FILTRES ET LISTES DE PLATS -->
             <div class="row">
-                <!-- Plats disponibles -->
                 <div class="col-md-6">
                     <div class="card mb-3">
                         <div class="card-header bg-light">
@@ -164,7 +159,6 @@
                                                 <i class="bi bi-x-circle"></i>
                                             </button>
                                         </div>
-                                        <!-- On envoie quand même l'ID si coché -->
                                         <input type="checkbox" th:value="${plat.id}" name="platsIds" style="display: none;"
                                                th:checked="${menu.plats.contains(plat)}">
                                     </div>
@@ -174,14 +168,12 @@
                     </div>
                 </div>
                 
-                <!-- Plats sélectionnés -->
                 <div class="col-md-6">
                     <div class="card mb-3">
                         <div class="card-header">
                             Plats sélectionnés *
                         </div>
                         <div class="card-body" id="selectedPlats" style="height: 400px; overflow-y: auto;">
-                            <!-- Les plats sélectionnés seront déplacés ici via JavaScript -->
                         </div>
                         <div id="platsError" class="invalid-feedback" style="display: none; margin-left: 1rem;">
                             Veuillez sélectionner au moins un plat
@@ -196,13 +188,18 @@
                 </div>
             </div>
 
-            <!-- Boutons du formulaire principal -->
             <button type="submit" class="btn btn-primary">Enregistrer</button>
             <a href="/menus" class="btn btn-secondary">Annuler</a>
         </form>
     </div>
 
     <script>
+        /**
+         * Déplace un plat de la liste des plats disponibles vers la liste des plats sélectionnés.
+         * Met à jour l'interface et les totaux nutritionnels.
+         * 
+         * @param {HTMLElement} item - L'élément HTML du plat à déplacer
+         */
         function moveToSelected(item) {
             const listGroupItem = item.closest('.list-group-item');
             if (!listGroupItem || listGroupItem.parentElement.id === 'selectedPlats') return;
@@ -210,7 +207,6 @@
             const checkbox = listGroupItem.querySelector('input[type="checkbox"]');
             checkbox.checked = true;
             
-            // Bascule des boutons
             const addBtn = listGroupItem.querySelector('.add-btn');
             const removeBtn = listGroupItem.querySelector('.remove-btn');
             if (addBtn) addBtn.style.display = 'none';
@@ -219,7 +215,6 @@
             listGroupItem.classList.remove('not-selected');
             listGroupItem.classList.add('selected');
             
-            // Créer une liste group dans la zone "selectedPlats" si elle n'existe pas
             let listGroup = document.querySelector("#selectedPlats .list-group");
             if (!listGroup) {
                 listGroup = document.createElement('div');
@@ -231,6 +226,12 @@
             updateAfterMove();
         }
         
+        /**
+         * Déplace un plat de la liste des plats sélectionnés vers la liste des plats disponibles.
+         * Met à jour l'interface et les totaux nutritionnels.
+         * 
+         * @param {HTMLElement} item - L'élément HTML du plat à déplacer
+         */
         function moveToAvailable(item) {
             const listGroupItem = item.closest('.list-group-item');
             if (!listGroupItem || listGroupItem.parentElement.parentElement.id === 'platsList') return;
@@ -238,7 +239,6 @@
             const checkbox = listGroupItem.querySelector('input[type="checkbox"]');
             checkbox.checked = false;
             
-            // Bascule des boutons
             const addBtn = listGroupItem.querySelector('.add-btn');
             const removeBtn = listGroupItem.querySelector('.remove-btn');
             if (addBtn) addBtn.style.display = 'flex';
@@ -247,7 +247,6 @@
             listGroupItem.classList.remove('selected');
             listGroupItem.classList.add('not-selected');
             
-            // Retour dans la liste disponible
             document.querySelector("#platsList").appendChild(listGroupItem);
             
             const selectedListGroup = document.querySelector("#selectedPlats .list-group");
@@ -258,6 +257,10 @@
             updateAfterMove();
         }
         
+        /**
+         * Calcule et met à jour les totaux nutritionnels des plats sélectionnés.
+         * Calcule la somme des calories, glucides, lipides et protéines.
+         */
         function updateTotals() {
             let totalCalories = 0, totalGlucides = 0, totalLipides = 0, totalProteines = 0;
             const selectedItems = document.querySelectorAll("#selectedPlats .list-group-item");
@@ -278,9 +281,10 @@
             document.getElementById("totalProteines").textContent = totalProteines;
         }
         
-        // *** MODIFICATION ***
-        // Empêche la touche "Entrée" dans les champs de filtre de soumettre le formulaire
-        // et relance simplement la fonction de filtrage.
+        /**
+         * Empêche la soumission du formulaire lors de l'appui sur Entrée dans les champs de filtrage.
+         * Applique plutôt le filtrage.
+         */
         function preventSubmitOnEnterForFilters() {
             const filterInputs = [
                 'categorieFilter', 'searchPlats',
@@ -302,6 +306,10 @@
             });
         }
 
+        /**
+         * Initialise l'interface au chargement de la page.
+         * Configure les boutons, déplace les plats déjà sélectionnés et met à jour les totaux.
+         */
         document.addEventListener("DOMContentLoaded", function() {
             const availableItems = document.querySelectorAll("#platsList .list-group-item");
             availableItems.forEach(item => {
@@ -318,22 +326,25 @@
                     if (removeBtn) removeBtn.style.display = 'none';
                 }
 
-                // Déplacer au clic
                 item.addEventListener("click", function() {
                     moveToSelected(item);
                 });
             });
             
             updateTotals();
-            preventSubmitOnEnterForFilters(); // *** MODIFICATION ***
+            preventSubmitOnEnterForFilters();
         });
 
-        // Validation du formulaire : exclure les champs de filtre
+        /**
+         * Valide le formulaire avant soumission.
+         * Vérifie la présence d'au moins un plat sélectionné et désactive les champs de filtrage.
+         * 
+         * @param {Event} event - L'événement de soumission du formulaire
+         * @returns {boolean} false si la validation échoue
+         */
         function validateForm(event) {
             const form = event.target;
             
-            // *** MODIFICATION ***
-            // On désactive temporairement les champs de filtre pour qu'ils ne soient pas validés.
             const filterFields = [
                 'categorieFilter', 'searchPlats',
                 'minCalories', 'maxCalories',
@@ -348,13 +359,11 @@
                 }
             });
 
-            // Vérifie la validité du formulaire (hors champs désactivés)
             const selectedPlats = document.querySelectorAll("#selectedPlats .list-group-item");
             if (!form.checkValidity() || selectedPlats.length === 0) {
                 event.preventDefault();
                 event.stopPropagation();
 
-                // Affiche l'erreur si aucun plat n'est sélectionné
                 if (selectedPlats.length === 0) {
                     document.getElementById('platsError').style.display = 'block';
                 } else {
@@ -363,7 +372,6 @@
 
                 form.classList.add('was-validated');
 
-                // On réactive les champs de filtre
                 filterFields.forEach(id => {
                     const fld = document.getElementById(id);
                     if (fld) {
@@ -373,7 +381,6 @@
                 return false;
             }
 
-            // Tout est bon, réactiver les champs de filtre pour ne pas perdre l'état
             filterFields.forEach(id => {
                 const fld = document.getElementById(id);
                 if (fld) {
@@ -391,6 +398,10 @@
             platsError.style.display = selectedPlats.length === 0 ? 'block' : 'none';
         }
 
+        /**
+         * Filtre la liste des plats disponibles selon les critères saisis.
+         * Applique les filtres sur le nom, la catégorie et les valeurs nutritionnelles.
+         */
         function filterPlats() {
             const searchInput = document.getElementById('searchPlats');
             const categorieSelect = document.getElementById('categorieFilter');
@@ -435,6 +446,10 @@
             });
         }
 
+        /**
+         * Réinitialise tous les champs de filtrage.
+         * Efface les valeurs saisies et réaffiche tous les plats.
+         */
         function clearSearch() {
             const searchInput = document.getElementById('searchPlats');
             const categorieSelect = document.getElementById('categorieFilter');
@@ -455,10 +470,13 @@
             filterPlats();
         }
 
+        /**
+         * Met à jour l'interface après un déplacement de plat.
+         * Recalcule les totaux et met à jour l'affichage des erreurs.
+         */
         function updateAfterMove() {
             updateTotals();
             updatePlatsError();
-            // On réapplique les filtres pour masquer/afficher correctement
             filterPlats();
         }
     </script>

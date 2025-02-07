@@ -214,6 +214,15 @@
     </div>
 
     <script>
+        /**
+         * Gère le changement du nombre d'éléments affichés par page
+         * @param {number} size - Le nouveau nombre d'éléments par page
+         * 
+         * Cette fonction :
+         * 1. Récupère tous les paramètres de filtrage actuels de l'URL
+         * 2. Redirige vers la première page avec la nouvelle taille de page
+         * tout en conservant les filtres existants (nutritionnels et catégorie)
+         */
         function changePageSize(size) {
             const params = new URLSearchParams(window.location.search);
             const nom = params.get('nom') || '';
@@ -234,10 +243,15 @@
                 + `&minProteines=${minProteines}&maxProteines=${maxProteines}`;
         }
 
+        // Soumission automatique du formulaire lors du changement de catégorie
         document.getElementById('categorieSelect').addEventListener('change', function() {
             document.getElementById('filterForm').submit();
         });
 
+        /**
+         * Configuration des événements de soumission sur la touche Entrée
+         * pour tous les champs de recherche et de filtrage
+         */
         const inputs = [
             'searchInput', 
             'minCaloriesInput', 'maxCaloriesInput',
@@ -255,6 +269,16 @@
             });
         });
 
+        /**
+         * Gère le tri des colonnes du tableau
+         * @param {string} field - Le nom du champ à trier (nom, categorie.nom, nbCalories, etc.)
+         * @param {string} direction - La direction du tri ('asc' ou 'desc')
+         * 
+         * Cette fonction :
+         * 1. Récupère l'URL courante avec tous ses paramètres
+         * 2. Met à jour les paramètres de tri
+         * 3. Redirige vers la nouvelle URL avec le tri appliqué
+         */
         function sortTable(field, direction) {
             const currentUrl = new URL(window.location.href);
             currentUrl.searchParams.set('sort', field);

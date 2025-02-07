@@ -21,6 +21,11 @@ import java.beans.PropertyEditorSupport;
 import java.util.Set;
 import java.util.HashSet;
 
+/**
+ * Contrôleur gérant les opérations CRUD et la recherche pour les menus du restaurant.
+ * Permet la gestion complète des menus incluant la création, modification, suppression et visualisation,
+ * ainsi que des fonctionnalités de recherche et de filtrage avancées.
+ */
 @Controller
 @RequestMapping("/menus")
 public class MenuController {
@@ -34,6 +39,21 @@ public class MenuController {
     @Autowired
     private CategorieRepository categorieRepository;
 
+    /**
+     * Affiche la liste des menus avec options de filtrage et pagination.
+     *
+     * @param model Modèle Spring pour transmettre les données à la vue
+     * @param nom Filtre sur le nom du menu (optionnel)
+     * @param minPrix Prix minimum pour le filtrage (optionnel)
+     * @param maxPrix Prix maximum pour le filtrage (optionnel)
+     * @param minCalories Calories minimales pour le filtrage (optionnel)
+     * @param maxCalories Calories maximales pour le filtrage (optionnel)
+     * @param page Numéro de la page courante (défaut: 0)
+     * @param size Nombre d'éléments par page (défaut: 10)
+     * @param sort Champ de tri (défaut: "nom")
+     * @param direction Direction du tri (défaut: "asc")
+     * @return Vue "menus" avec la liste filtrée et paginée
+     */
     @GetMapping
     public String listeMenus(
             Model model,
@@ -78,6 +98,16 @@ public class MenuController {
         return "menus";
     }
 
+    /**
+     * Crée une spécification JPA pour le filtrage des menus.
+     * 
+     * @param nom Filtre sur le nom
+     * @param minPrix Prix minimum
+     * @param maxPrix Prix maximum
+     * @param minCalories Calories minimales
+     * @param maxCalories Calories maximales
+     * @return Specification<Menu> pour le filtrage
+     */
     private Specification<Menu> createSpecification(String nom, Double minPrix, Double maxPrix, 
                                                      Integer minCalories, Integer maxCalories) {
         Specification<Menu> spec = Specification.where(null);
@@ -115,6 +145,17 @@ public class MenuController {
         return spec;
     }
 
+    /**
+     * Affiche le formulaire de création/modification d'un menu.
+     *
+     * @param model Modèle Spring
+     * @param id ID du menu à modifier (optionnel)
+     * @param searchPlat Recherche de plats par nom (optionnel)
+     * @param filterCategorieId Filtre par catégorie (optionnel)
+     * @param minCalories Calories minimales (optionnel)
+     * @param maxCalories Calories maximales (optionnel)
+     * @return Vue "menu-form"
+     */
     @GetMapping("/create")
     public String showCreateForm(
             Model model,
@@ -150,6 +191,13 @@ public class MenuController {
         return "menu-form";
     }
 
+    /**
+     * Traite la création d'un nouveau menu.
+     *
+     * @param menu Menu à créer
+     * @param platsIds Liste des IDs des plats à associer
+     * @return Redirection vers la liste des menus
+     */
     @PostMapping("/create")
     public String createMenu(@ModelAttribute Menu menu,
                              @RequestParam(value = "platsIds", required = false) List<Long> platsIds) {
@@ -164,6 +212,14 @@ public class MenuController {
         return "redirect:/menus";
     }
 
+    /**
+     * Affiche le formulaire de modification d'un menu existant.
+     *
+     * @param id ID du menu à modifier
+     * @param model Modèle Spring
+     * @return Vue "menu-form"
+     * @throws IllegalArgumentException si l'ID du menu est invalide
+     */
     @GetMapping("/edit/{id}")
     public String showEditForm(@PathVariable Long id, Model model) {
         Menu menu = menuRepository.findById(id)
@@ -174,6 +230,14 @@ public class MenuController {
         return "menu-form";
     }
 
+    /**
+     * Traite la modification d'un menu existant.
+     *
+     * @param id ID du menu à modifier
+     * @param menu Menu modifié
+     * @param platsIds Liste des IDs des plats à associer
+     * @return Redirection vers la liste des menus
+     */
     @PostMapping("/edit/{id}")
     public String updateMenu(@PathVariable Long id, @ModelAttribute Menu menu,
                              @RequestParam(value = "platsIds", required = false) List<Long> platsIds) {
@@ -190,12 +254,26 @@ public class MenuController {
         return "redirect:/menus";
     }
 
+    /**
+     * Supprime un menu.
+     *
+     * @param id ID du menu à supprimer
+     * @return Redirection vers la liste des menus
+     */
     @GetMapping("/delete/{id}")
     public String deleteMenu(@PathVariable Long id) {
         menuRepository.deleteById(id);
         return "redirect:/menus";
     }
 
+    /**
+     * Affiche les détails d'un menu spécifique.
+     *
+     * @param id ID du menu à afficher
+     * @param model Modèle Spring
+     * @return Vue "menu-details"
+     * @throws IllegalArgumentException si l'ID du menu est invalide
+     */
     @GetMapping("/{id}")
     public String showMenu(@PathVariable Long id, Model model) {
         Menu menu = menuRepository.findById(id)
@@ -204,6 +282,11 @@ public class MenuController {
         return "menu-details";
     }
 
+    /**
+     * Configure le binder pour la conversion des plats.
+     *
+     * @param binder WebDataBinder pour la configuration
+     */
     @InitBinder
     public void initBinder(WebDataBinder binder) {
         binder.registerCustomEditor(Plat.class, "plats", new PropertyEditorSupport() {
