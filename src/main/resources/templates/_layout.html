@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org/" lang="en">
+<html xmlns:th="http://www.thymeleaf.org/" lang="fr">
 
 <head th:fragment="header( title, links, scripts )">
     <meta charset="UTF-8">
@@ -13,12 +13,27 @@
     <title th:replace="${title}">Spring Shop</title>
     <th:block th:replace="${links}" />
     <th:block th:replace="${scripts}" />
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const currentPath = window.location.pathname;
+            const links = document.querySelectorAll('.nav-link');
+            
+            links.forEach(link => {
+                const linkPath = link.getAttribute('href');
+                console.log(currentPath, linkPath);
+                if (currentPath === linkPath || 
+                   (linkPath !== '/' && currentPath.startsWith(linkPath))) {
+                    link.classList.add('active');
+                }
+            });
+        });
+        </script>
 </head>
 
 <body>
     <nav th:fragment="menu" class="navbar navbar-expand-lg navbar-dark bg-primary mb-3">
         <div class="container-fluid">
-            <a class="navbar-brand" th:href="@{/}">Spring Shop</a>
+            <a class="navbar-brand" th:href="@{/}">Gestion Restaurant</a>
             <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarColor01"
                 aria-controls="navbarColor01" aria-expanded="false" aria-label="Toggle navigation">
                 <span class="navbar-toggler-icon"></span>
@@ -26,13 +41,13 @@
             <div class="collapse navbar-collapse" id="navbarColor01">
                 <ul class="navbar-nav me-auto">
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/}">Accueil</a>
+                        <a class="nav-link" href="/" id="homeLink">Accueil</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/plats}">Plats</a>
+                        <a class="nav-link" href="/plats" id="platsLink">Plats</a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" th:href="@{/menus}">Menus</a>
+                        <a class="nav-link" href="/menus" id="menusLink">Menus</a>
                     </li>
                 </ul>
             </div>
