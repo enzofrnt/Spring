@@ -216,9 +216,7 @@
             }
             
             listGroup.appendChild(listGroupItem);
-            updateTotals();
-            resetFilter();
-            updatePlatsError();
+            updateAfterMove();
         }
         
         function moveToAvailable(item) {
@@ -247,8 +245,7 @@
                 selectedListGroup.remove();
             }
             
-            updateTotals();
-            updatePlatsError();
+            updateAfterMove();
         }
         
         function updateTotals() {
@@ -420,13 +417,10 @@
             filterPlats();
         }
 
-        // Ajoutons une fonction pour réinitialiser le filtre lors du déplacement des plats
-        function resetFilter() {
-            const searchInput = document.getElementById('searchPlats');
-            const categorieSelect = document.getElementById('categorieFilter');
-            if (searchInput.value !== '' || categorieSelect.value !== '') {
-                clearSearch();
-            }
+        function updateAfterMove() {
+            updateTotals();
+            updatePlatsError();
+            filterPlats(); // On réapplique les filtres actuels au lieu de les réinitialiser
         }
     </script>
 </body>
